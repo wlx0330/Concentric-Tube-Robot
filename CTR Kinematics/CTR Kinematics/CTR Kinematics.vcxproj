@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{745288b7-36f4-4dfa-9328-f951a2e4baf5}</ProjectGuid>
+    <ProjectGuid>{e653d451-e366-49c8-9c00-8a0e420034ae}</ProjectGuid>
     <RootNamespace>CTRKinematics</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -139,21 +139,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\BC.cpp" />
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\BVP.cpp" />
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\CTR.cpp" />
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\Kinematics.cpp" />
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\main.cpp" />
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\RobotController.cpp" />
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\Tube.cpp" />
+    <ClCompile Include="src\BC.cpp" />
+    <ClCompile Include="src\BVP.cpp" />
+    <ClCompile Include="src\CTR.cpp" />
+    <ClCompile Include="src\Kinematics.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\RobotController.cpp" />
+    <ClCompile Include="src\Tube.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\BC.h" />
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\BVP.h" />
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\CTR.h" />
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\Kinematics.h" />
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\RobotController.h" />
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\Tube.h" />
+    <ClInclude Include="src\BC.h" />
+    <ClInclude Include="src\BVP.h" />
+    <ClInclude Include="src\CTR.h" />
+    <ClInclude Include="src\Kinematics.h" />
+    <ClInclude Include="src\RobotController.h" />
+    <ClInclude Include="src\Tube.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

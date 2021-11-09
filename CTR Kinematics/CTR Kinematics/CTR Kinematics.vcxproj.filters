@@ -15,45 +15,45 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\BC.cpp">
+    <ClCompile Include="src\BC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\BVP.cpp">
+    <ClCompile Include="src\BVP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\CTR.cpp">
+    <ClCompile Include="src\CTR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\Kinematics.cpp">
+    <ClCompile Include="src\Kinematics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\main.cpp">
+    <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\RobotController.cpp">
+    <ClCompile Include="src\RobotController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\Tube.cpp">
+    <ClCompile Include="src\Tube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\BC.h">
+    <ClInclude Include="src\BC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\BVP.h">
+    <ClInclude Include="src\BVP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\CTR.h">
+    <ClInclude Include="src\CTR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\Kinematics.h">
+    <ClInclude Include="src\Kinematics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\RobotController.h">
+    <ClInclude Include="src\RobotController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\OneDrive - The University of Western Ontario\Research Assistant\C++\CTR_Test\CTR_Test\Tube.h">
+    <ClInclude Include="src\Tube.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
