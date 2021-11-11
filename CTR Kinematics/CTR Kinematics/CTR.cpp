@@ -7,13 +7,18 @@ std::array<Tube, 3UL> CTR::tubes = { Tube(), Tube(), Tube() };
 CTR::CTR()
 {
 	//get tube number
-	this->n = (int)CTR::tubes.size();
+	//this->n = (int)CTR::tubes.size();
 
 	//set tube parameters ID OD Ls Lc R
 	CTR::tubes[0].SetDimension(0.8e-3, 0.92e-3, 0.19, 0.06, 0.04);
 	CTR::tubes[1].SetDimension(0.97e-3, 1.1e-3, 0.12, 0.08, 0.1);
 	CTR::tubes[2].SetDimension(1.2e-3, 1.4e-3, 0.1, 0.0, INFINITY);
 
+	blaze::subvector(this->config, 0UL, 3UL) = { 0.05, 0.0, 0.0 }; //initial translation
+	blaze::subvector(this->config, 3UL, 3UL) = { 1.570796326794897, 0.0, 0.0 }; //initial rotation in rad
+
+
+	// legacy 
 	this->TubeTran = { 0.05, 0.0, 0.0 }; //initial translation
 	this->TubeRot = { 1.570796326794897 , 0.0, 0.0 }; //initial rotation in rad
 	//this->TubeRot = { 0.0 , 0.0, 0.0 }; //initial rotation in rad
@@ -41,6 +46,25 @@ void CTR::SolveFK(
 	this->DistalEnd = blaze::column(this->shapes[0], this->shapes[0].columns() - 1);
 	blaze::subvector(this->config, 0UL, 3UL) = this->TubeTran;
 	blaze::subvector(this->config, 3UL, 3UL) = this->TubeRot;
+}
+
+// change robot configuration
+bool CTR::SetConfig(const blaze::StaticVector<double, 6UL>& config_new)
+{
+	// check input 
+	blaze::StaticVector<double, 3UL> TubeTran, TubeRot;
+	TubeTran = blaze::subvector(config_new, 0UL, 3UL);
+	TubeRot = blaze::subvector(config_new, 3UL, 3UL);
+	//check if tube tran is the same
+	if (!blaze::isZero(TubeTran - this->GetTran())) {
+		this->SolveBC();
+		this->GetFunc();
+	}
+	this->SolveBVP(20); 
+	this->SolveShape();
+
+	this->config = config_new;
+	return true;
 }
 
 // solve CTR shape
@@ -239,25 +263,27 @@ void CTR::GetFunc()
 }
 
 // display tube translation
-std::string CTR::GetTran()
+blaze::StaticVector<double, 3UL> CTR::GetTran()
 {
-	std::string s;
-	for (int i = 0; i < this->TubeTran.size(); ++i) {
-		s += "\t";
-		s += this->GetTran(i);
-	}
-	return s;
+	return blaze::subvector(this->config, 0UL, 3UL);
+	//std::string s;
+	//for (int i = 0; i < this->TubeTran.size(); ++i) {
+	//	s += "\t";
+	//	s += this->GetTran(i);
+	//}
+	//return s;
 }
 
 // display tube rotation
-std::string CTR::GetRot()
+blaze::StaticVector<double, 3UL> CTR::GetRot()
 {
-	std::string s;
-	for (int i = 0; i < this->TubeRot.size(); ++i) {
-		s += "\t";
-		s += this->GetRot(i);
-	}
-	return s;
+	return blaze::subvector(this->config, 3UL, 3UL);
+	//std::string s;
+	//for (int i = 0; i < this->TubeRot.size(); ++i) {
+	//	s += "\t";
+	//	s += this->GetRot(i);
+	//}
+	//return s;
 }
 
 // display tube translation

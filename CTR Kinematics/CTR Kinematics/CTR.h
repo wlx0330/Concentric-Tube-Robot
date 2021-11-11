@@ -23,16 +23,17 @@ public:
 	// solve CTR forward kinematics overload
 	void SolveFK();
 
+	// legacy, redone in kinematics class
 	// solve CTR forward kinematics
 	void SolveFK(
 		const blaze::StaticVector<double, 3UL>& val_Tran,
 		const blaze::StaticVector<double, 3UL>& val_Rot);
 
 	// display tube translation
-	std::string GetTran();
+	blaze::StaticVector<double, 3UL> GetTran();
 
 	// display tube rotation
-	std::string GetRot();
+	blaze::StaticVector<double, 3UL> GetRot();
 
 	// display tube translation
 	std::string GetTran(int i);
@@ -52,22 +53,29 @@ public:
 	// set tube rotation
 	bool SetRot(int i, double val);
 
+	// change robot configuration
+	bool SetConfig(const blaze::StaticVector<double, 6UL>& config);
+
 	// psudo matrix inverse
 	blaze::DynamicMatrix<double> pinv(const blaze::DynamicMatrix<double>& M, const double& tol);
 
 	// class properties
 	BVP bvp; //bvp solver class
 	BC bc; //CTR boundary condition class
-	int n; //tube count
+	// int n; //tube count
 	int m; //segment count
 	static std::array<Tube, 3UL> tubes; //tube class
 	std::array<blaze::DynamicMatrix<double, blaze::columnMajor>, 3UL> shapes;
+
+	// legacy
 	blaze::StaticVector<double, 3UL> TubeTran; //tube translation column vector
 	blaze::StaticVector<double, 3UL> TubeRot; //tube rotataion column vector
 	// combine rot and tran as input, then use functions to get rot and tran
+
 	blaze::StaticMatrix<double, 3UL, 3UL, blaze::columnMajor> R_tip; //tip rotation matrix
 	blaze::StaticVector<double, 3UL> DistalEnd;
-	blaze::StaticVector<double, 6UL> config;
+	// robot input configuration
+	blaze::StaticVector<double, 6UL> config; // tran (m) + rot (rad)
 
 private:
 	// determine boudnary conditions
