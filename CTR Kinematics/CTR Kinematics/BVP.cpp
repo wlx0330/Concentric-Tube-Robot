@@ -32,7 +32,7 @@ std::vector<blaze::DynamicMatrix<double, blaze::columnMajor>> BVP::parareal(
 {
 	// std::cout << "-----------parareal alg called------------" << std::endl; //test code
 	// initialize left value
-	blaze::DynamicMatrix<double, blaze::columnMajor> xL(6UL, this->m, 0.0);
+	blaze::DynamicMatrix<double, blaze::columnMajor> xL(6UL, bc.m, 0.0);
 	for (int i = 0; i < 3; ++i) {
 		xL(i, bc.intervals(i, 0)) = rot[i];
 		xL(i + 3, bc.intervals(i, 0)) = guess[i];
@@ -40,16 +40,16 @@ std::vector<blaze::DynamicMatrix<double, blaze::columnMajor>> BVP::parareal(
 
 	// initalize right value
 	blaze::DynamicVector<double, blaze::columnVector> x_RK1;
-	for (int i = 0; i < this->m - 1; ++i) {
+	for (int i = 0; i < bc.m - 1; ++i) {
 		//RK1 formula
 		x_RK1 = blaze::column(xL, i) + (this->x_mesh[i + 1][0] - this->x_mesh[i][0])
 			* (this->v_func[i](blaze::column(xL, i)));
 		blaze::column(xL, i + 1) = x_RK1 * blaze::column(bc.types, i + 1)
 			+ blaze::column(xL, i + 1) * !(blaze::column(bc.types, i + 1));
 	}
-	blaze::DynamicMatrix<double, blaze::columnMajor> xR_G(6UL, this->m, 0.0);
-	std::vector<blaze::DynamicMatrix<double, blaze::columnMajor>> xR_F_mesh(this->m);
-	std::vector<std::future<void>> fu(this->m);
+	blaze::DynamicMatrix<double, blaze::columnMajor> xR_G(6UL, bc.m, 0.0);
+	std::vector<blaze::DynamicMatrix<double, blaze::columnMajor>> xR_F_mesh(bc.m);
+	std::vector<std::future<void>> fu(bc.m);
 
 	while (true) {
 		//// normal for
@@ -60,7 +60,7 @@ std::vector<blaze::DynamicMatrix<double, blaze::columnMajor>> BVP::parareal(
 		//}
 
 		// parallel for
-		for (int i = 0; i < this->m - 1; ++i) {
+		for (int i = 0; i < bc.m - 1; ++i) {
 			fu[i] = std::async(std::launch::async, [this, &xR_G, &xL, &xR_F_mesh](int i) {
 				blaze::column(xR_G, i) = blaze::column(xL, i)
 					+ (this->x_mesh[i + 1][0] - this->x_mesh[i][0])
@@ -68,16 +68,16 @@ std::vector<blaze::DynamicMatrix<double, blaze::columnMajor>> BVP::parareal(
 				xR_F_mesh[i] = this->RK4(this->x_mesh[i], blaze::column(xL, i), this->v_func[i]);
 				}, i);
 		}
-		for (int i = 0; i < this->m - 1; ++i) {
+		for (int i = 0; i < bc.m - 1; ++i) {
 			fu[i].wait();
 		}
 
-		xR_F_mesh[this->m - 1] = 0.0 * xR_F_mesh[0]; // necessary to initialize the last matrix as well
+		xR_F_mesh[bc.m - 1] = 0.0 * xR_F_mesh[0]; // necessary to initialize the last matrix as well
 		auto xR_F = this->squeeze3(xR_F_mesh); //squeeze function
 		auto xR_delta = xR_F - xR_G;
 		auto xL_old = xL;
 
-		for (int i = 0; i < this->m - 1; ++i) {
+		for (int i = 0; i < bc.m - 1; ++i) {
 			x_RK1 = blaze::column(xL, i) + (this->x_mesh[i + 1][0] - this->x_mesh[i][0])
 				* (this->v_func[i](blaze::column(xL, i)));
 			blaze::column(xL, i + 1) = (x_RK1 + blaze::column(xR_delta, i)) * blaze::column(bc.types, i + 1)
@@ -86,12 +86,12 @@ std::vector<blaze::DynamicMatrix<double, blaze::columnMajor>> BVP::parareal(
 
 		if (blaze::norm(xL_old - xL) < 1e-6) {
 			// additional loop with parallel computing
-			for (int i = 0; i < this->m; ++i) {
+			for (int i = 0; i < bc.m; ++i) {
 				fu[i] = std::async(std::launch::async, [this, &xL, &xR_F_mesh](int i) {
 					xR_F_mesh[i] = this->RK4(this->x_mesh[i], blaze::column(xL, i), this->v_func[i]);
 					}, i);
 			}
-			for (int i = 0; i < this->m; ++i) {
+			for (int i = 0; i < bc.m; ++i) {
 				fu[i].wait();
 			}
 			return xR_F_mesh;

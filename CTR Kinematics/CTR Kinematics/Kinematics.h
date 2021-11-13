@@ -1,6 +1,9 @@
 #pragma once
 #include <iostream>
+#include <blaze/Math.h>
 #include "CTR.h"
+
+
 
 class Kinematics
 {
@@ -13,6 +16,5 @@ public:
 	// CTR inverse kinematics
 	void CTRIK();
 
-	// CTR bvpformulation and solve
-	void CTRBVP();
+
 };

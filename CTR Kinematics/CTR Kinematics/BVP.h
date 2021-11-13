@@ -4,7 +4,7 @@
 #include <vector>
 #include <functional>
 #include <future>
-#include <blaze\Math.h>
+#include <blaze/Math.h>
 #include "BC.h"
 
 // rename the type because it is way too long
@@ -51,6 +51,6 @@ public:
 	blaze::StaticMatrix<double, 3UL, 3UL, blaze::columnMajor> Ja;
 	blaze::StaticMatrix<double, 3UL, 3UL, blaze::columnMajor> Ja_inv;
 	int n_sample; //number of samples for each segment
-	int m; //number of segments
+	// int m; //number of segments
 	bool isFirstIt; //fisrt iteration flag
 };
