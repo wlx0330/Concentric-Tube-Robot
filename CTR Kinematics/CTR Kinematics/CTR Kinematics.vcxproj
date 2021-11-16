@@ -116,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,6 +131,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <Optimization>Full</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,7 +147,6 @@
     <ClCompile Include="CTR.cpp" />
     <ClCompile Include="Kinematics.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="RobotController.cpp" />
     <ClCompile Include="Tube.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -155,7 +155,6 @@
     <ClInclude Include="BVP.h" />
     <ClInclude Include="CTR.h" />
     <ClInclude Include="Kinematics.h" />
-    <ClInclude Include="RobotController.h" />
     <ClInclude Include="Tube.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

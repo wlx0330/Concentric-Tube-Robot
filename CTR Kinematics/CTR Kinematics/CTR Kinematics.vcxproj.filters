@@ -30,9 +30,6 @@
     <ClCompile Include="Tube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RobotController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -54,9 +51,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Kinematics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RobotController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Tube.h">

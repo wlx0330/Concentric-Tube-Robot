@@ -237,15 +237,33 @@ void CTR::SolveFunc()
 }
 
 // get tube translation
-blaze::StaticVector<double, 3UL> CTR::GetTran()
+blaze::StaticVector<double, 3UL> CTR::GetTran() const
 {
 	return blaze::subvector(this->config, 0UL, 3UL);
 }
 
 // get tube rotation
-blaze::StaticVector<double, 3UL> CTR::GetRot()
+blaze::StaticVector<double, 3UL> CTR::GetRot() const
 {
 	return blaze::subvector(this->config, 3UL, 3UL);
+}
+
+// get CTR proximal end position
+blaze::StaticVector<double, 3UL> CTR::GetProx() const
+{
+	return blaze::column(this->shapes[0UL], 0UL);
+}
+
+// get CTR distal end position
+blaze::StaticVector<double, 3UL> CTR::GetDist() const
+{
+	return blaze::column(this->shapes[0], this->shapes[0UL].columns() - 1);
+}
+
+// get CTR configruation tran & rot
+blaze::StaticVector<double, 6UL> CTR::GetConfig() const
+{
+	return this->config;
 }
 
 // solve bvp function
@@ -319,7 +337,9 @@ void CTR::SolveBVP(const int& n_sample)
 }
 
 // psudo matrix inverse
-blaze::DynamicMatrix<double> CTR::pinv(const blaze::DynamicMatrix<double>& M, const double& tol)
+blaze::DynamicMatrix<double> CTR::pinv(
+	const blaze::DynamicMatrix<double>& M,
+	const double& tol) const
 {
 	blaze::DynamicMatrix<double> U;  // The matrix for the left singular vectors
 	blaze::DynamicVector<double> s;  // The vector for the singular values

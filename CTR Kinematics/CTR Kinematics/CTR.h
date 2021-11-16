@@ -21,22 +21,27 @@ public:
 	// CTR(const CTR& ctr);
 
 	// get tube translation
-	blaze::StaticVector<double, 3UL> GetTran();
+	blaze::StaticVector<double, 3UL> GetTran() const;
 
 	// get tube rotation
-	blaze::StaticVector<double, 3UL> GetRot();
+	blaze::StaticVector<double, 3UL> GetRot() const;
 
-	// set tube translation
-	// bool SetTran(int i, double val);
+	// get CTR proximal end position
+	blaze::StaticVector<double, 3UL> GetProx() const;
 
-	// set tube rotation
-	// bool SetRot(int i, double val);
+	// get CTR distal end position
+	blaze::StaticVector<double, 3UL> GetDist() const;
+
+	// get CTR configruation tran & rot
+	blaze::StaticVector<double, 6UL> GetConfig() const;
 
 	// change robot configuration
 	bool SetConfig(const blaze::StaticVector<double, 6UL>& config);
 
 	// psudo matrix inverse
-	blaze::DynamicMatrix<double> pinv(const blaze::DynamicMatrix<double>& M, const double& tol);
+	blaze::DynamicMatrix<double> pinv(
+		const blaze::DynamicMatrix<double>& M,
+		const double& tol) const;
 
 	// class properties
 	BVP bvp; //bvp solver class
@@ -44,7 +49,7 @@ public:
 	static std::array<Tube, 3UL> tubes; //tube class
 	std::array<blaze::DynamicMatrix<double, blaze::columnMajor>, 3UL> shapes;
 	blaze::StaticMatrix<double, 3UL, 3UL, blaze::columnMajor> R_tip; //tip rotation matrix
-	blaze::StaticVector<double, 3UL> DistalEnd;
+	// blaze::StaticVector<double, 3UL> DistalEnd;
 
 private:
 	// robot configruation

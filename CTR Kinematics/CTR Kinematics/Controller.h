@@ -15,11 +15,17 @@ public:
 	// constructor
 	Controller();
 
-	//menu function
+	// display tube information function
+	void CTRInfo();
+
+	// main menu function
 	void ControllerMenu();
 
-	//display column vectors
-	std::string DispVec3(const blaze::StaticVector<double, 3UL>& pos);
+	// FK menu function
+	void FKMenu();
+
+	// IK menu function
+	void IKMenu();
 
 	// test method
 	void Test();
@@ -30,5 +36,9 @@ public:
 	blaze::StaticVector<double, 3UL> target;
 
 private:
+	//display column vectors
+	std::string DispVec3(const blaze::StaticVector<double, 3UL>& pos);
+
+	// class member object CTR
 	CTR ctr;
 };

@@ -6,94 +6,133 @@ Controller::Controller()
 
 }
 
+// display tube information function
+void Controller::CTRInfo()
+{
+	system("cls");
+	std::cout << "========== CTR Kinemaitcs Simulation Program (Beta) ==========" << std::endl;
+	std::cout << std::endl;
+	std::cout << "\t\t\tInner Tube \tMiddle Tube \tOuter Tube" << std::endl;
+	std::cout << "Tube translation (m): " << this->DispVec3(this->ctr.GetTran()) << std::endl;
+	std::cout << "Tube rotation (deg): " << this->DispVec3(this->ctr.GetRot() * 180.0 / M_PI) << std::endl;
+	std::cout << std::endl;
+	std::cout << "\t\t\tX \t\tY \t\tZ" << std::endl;
+	std::cout << "Robot proximal end: " << this->DispVec3(this->ctr.GetProx()) << std::endl;
+	std::cout << "Robot distal end: " << this->DispVec3(this->ctr.GetDist()) << std::endl;
+	std::cout << std::endl;
+	// std::cout << "Target Position: " << "\t" << blaze::trans(this->target) << std::endl;
+	std::cout << "Computation time (ms): " << "\t" << this->timer.count() << std::endl;
+	std::cout << std::endl;
+}
+
 //menu function
 void Controller::ControllerMenu()
 {
 	while (true) {
-		system("cls");
-		std::cout << "========== CTR Kinemaitcs Simulation Program (Beta) ==========" << std::endl;
-		std::cout << std::endl;
-		std::cout << "\t\t\tInner Tube \tMiddle Tube \tOuter Tube" << std::endl;
-		std::cout << "Tube translation (m): " << this->DispVec3(this->ctr.GetTran()) << std::endl;
-		std::cout << "Tube rotation (deg): " << this->DispVec3(this->ctr.GetRot() * 180.0 / M_PI) << std::endl;
-		std::cout << std::endl;
-		std::cout << "\t\t\tX \t\tY \t\tZ" << std::endl;
-		std::cout << "Robot proximal end: "
-			<< this->DispVec3(blaze::column(this->ctr.shapes[0UL], 0UL)) << std::endl;
-		std::cout << "Robot distal end: "
-			<< this->DispVec3(blaze::column(this->ctr.shapes[0], this->ctr.shapes[0UL].columns() - 1)) << std::endl;
-		std::cout << std::endl;
-		// std::cout << "Target Position: " << "\t" << blaze::trans(this->target) << std::endl;
-		std::cout << "Computation time (ms): " << "\t" << this->timer.count() << std::endl;
-		std::cout << std::endl;
-
-		std::cout << "Select the following to change input configuration: " << std::endl;
-		std::cout << "0. test. " << std::endl;
-		std::cout << "1. change tube translation. " << std::endl;
-		std::cout << "2. change tube rotation. " << std::endl;
-		std::cout << "3. exit. " << std::endl;
-		std::cout << "4. test IK. " << std::endl;
+		this->CTRInfo();
+		std::cout << "Select one operation below: " << std::endl;
+		std::cout << "1. Test CTR forward kinematics. " << std::endl;
+		std::cout << "2. Test CTR inverse kinematics. " << std::endl;
+		std::cout << "3. Exit. " << std::endl;
 
 		int select;
 		std::cin >> select;
-		if (select == 1 || select == 2) {
-			//std::cout << "Select the tube to change: " << std::endl;
-			//std::cout << "1. Inner Tube" << std::endl;
-			//std::cout << "2. Middle Tube" << std::endl;
-			//std::cout << "3. Outer Tube" << std::endl;
-
-			//int index;
-			//std::cin >> index;
-			//if (index == 1 || index == 2 || index == 3) {
-			//	if (select == 1) {
-			//		//std::cout << "The current tube translation is: "
-			//		//	<< this->ctr.GetTran(index - 1) << " (m)" << std::endl;
-			//		std::cout << "Enter a new translation value in (m): " << std::endl;
-			//	}
-			//	else if (select == 2) {
-			//		//std::cout << "The current tube rotation is: "
-			//		//	<< this->ctr.GetRot(index - 1) << " (deg)" << std::endl;
-			//		std::cout << "Enter a new translation value in (deg): " << std::endl;
-			//	}
-
-			//	// change tube configruations
-			//	double val;
-			//	std::cin >> val;
-			//	if (!std::cin.fail()) {
-			//		bool ret;
-			//		if (select == 1) {
-			//			// ret = this->ctr.SetTran(index - 1, val);
-			//		}
-			//		else if (select == 2) {
-			//			// ret = this->ctr.SetRot(index - 1, val);
-			//		}
-
-			//		if (ret) {
-			//			std::cout << "Robot configuration updat SUCCESS. " << std::endl;
-			//		}
-			//		else {
-			//			std::cout << "Robot configuration update FAIL. " << std::endl;
-			//		}
-			//		//this->RobotFK();
-			//		system("pause");
-			//	}
-			//}
+		if (std::cin.fail()) {
+			std::cin.clear();
+			std::cin.ignore(INT_MAX, '\n');
+			select = -1;
 		}
-		else if (select == 3) {
+		switch (select) {
+		case 1: // CTR FK
+			this->FKMenu();
+			break;
+		case 2: // CTR IK
+			this->IKMenu();
+			break;
+		case 3: // exit
 			return;
+			break;
+		default:
+			std::cout << "Invalid input! " << std::endl;
+			system("pause");
+			continue;
 		}
-		else if (select == 4) {
-			// const blaze::StaticVector<double, 3UL> target = { 0.04, 0.03, 0.11 };
-			//this->target = { 0.04, 0.03, 0.11 };
-			//this->ctr = this->RobotIK(this->ctr, this->target);
-			//system("pause");
-		}
-		else if (select == 0) {
-			this->Test();
-		}
-		std::cin.clear();
-		std::cin.ignore();
 	}
+}
+
+//TODO CTR translation not working
+// FK menu function 
+void Controller::FKMenu()
+{
+	while (true) {
+		this->CTRInfo();
+		std::cout << "Select an operation: " << std::endl;
+		std::cout << "1. Translate Inner Tube" << std::endl;
+		std::cout << "2. Translate Middle Tube" << std::endl;
+		std::cout << "3. Translate Outer Tube" << std::endl;
+		std::cout << "4. Rotate Inner Tube" << std::endl;
+		std::cout << "5. Rotate Middle Tube" << std::endl;
+		std::cout << "6. Rotate Outer Tube" << std::endl;
+		std::cout << "0. Exit CTR Forward Kinematics" << std::endl;
+		auto config = this->ctr.GetConfig();
+		int index;
+		std::cin >> index;
+		if (std::cin.fail()) {
+			std::cin.clear();
+			std::cin.ignore(INT_MAX, '\n');
+			index = -1;
+		}
+		switch (index) {
+		case 0:
+			return;
+			break;
+		case 1:
+		case 2:
+		case 3:
+			std::cout << "The current tube translation is: "
+				<< config[index - 1] << " (m)" << std::endl;
+			std::cout << "Enter a new translation value in (m): " << std::endl;
+			break;
+		case 4:
+		case 5:
+		case 6:
+			std::cout << "The current tube rotation is: "
+				<< config[index - 1] * 180 / M_PI << " (deg)" << std::endl;
+			std::cout << "Enter a new rotation value in (deg): " << std::endl;
+			break;
+		default:
+			std::cout << "Invalid input! " << std::endl;
+			system("pause");
+			continue;
+		}
+
+		// change tube configruations
+		double val;
+		std::cin >> val;
+		if (!std::cin.fail()) {
+			index < 4 ? config[index - 1] = val : config[index - 1] = val / 180 * M_PI;
+			auto t1 = std::chrono::high_resolution_clock::now();
+			this->kinematics.CTRFK(this->ctr, config);
+			auto t2 = std::chrono::high_resolution_clock::now();
+			this->timer = t2 - t1;
+		}
+		else {
+			std::cout << "Invalid input! " << std::endl;
+			system("pause");
+			std::cin.clear();
+			std::cin.ignore(INT_MAX, '\n');
+			continue;
+		}
+	}
+}
+
+// IK menu function
+void Controller::IKMenu()
+{
+	// const blaze::StaticVector<double, 3UL> target = { 0.04, 0.03, 0.11 };
+//this->target = { 0.04, 0.03, 0.11 };
+//this->ctr = this->RobotIK(this->ctr, this->target);
+//system("pause");
 }
 
 //display column vectors
