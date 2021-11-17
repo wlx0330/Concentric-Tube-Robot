@@ -1,0 +1,7 @@
+int32 speed 0 # motor speed
+int32 acc_coeff 10 # motor acc
+bool setspeed 0 # set speed or get speed flag
+int32 index -1 # motor index, default -1 ,means for all motors
+---
+int32 speed
+int32 acc_coeff

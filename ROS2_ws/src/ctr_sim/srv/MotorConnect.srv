@@ -1,0 +1,5 @@
+string address
+int32 type
+---
+bool is_connect false
+int32 index 0

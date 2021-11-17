@@ -1,0 +1,6 @@
+# Request
+int8 motor_index 0
+int8 motor_move 0
+---
+# Response
+bool motor_ready false

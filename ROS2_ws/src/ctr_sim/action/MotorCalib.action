@@ -1,0 +1,9 @@
+# Request
+int8 motor_index 0
+int8 motor_move 0
+---
+# Result
+int32 home_pos 0
+---
+# Feedback
+# int32 pos 0
