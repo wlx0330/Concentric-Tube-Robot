@@ -15,45 +15,45 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\BC.cpp">
+    <ClCompile Include="BC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\BVP.cpp">
+    <ClCompile Include="BVP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\CTR.cpp">
+    <ClCompile Include="CTR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Kinematics.cpp">
+    <ClCompile Include="Controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\main.cpp">
+    <ClCompile Include="Tube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\RobotController.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Tube.cpp">
+    <ClCompile Include="Kinematics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\BC.h">
+    <ClInclude Include="BC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\BVP.h">
+    <ClInclude Include="BVP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\CTR.h">
+    <ClInclude Include="Controller.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Kinematics.h">
+    <ClInclude Include="CTR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\RobotController.h">
+    <ClInclude Include="Kinematics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Tube.h">
+    <ClInclude Include="Tube.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

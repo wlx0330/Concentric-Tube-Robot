@@ -13,6 +13,7 @@ public:
 	blaze::DynamicVector<double> GetUnique(const blaze::StaticMatrix<double, 3UL, 3UL>& BV);
 
 	// class properties
+	int m; //segment count
 	blaze::DynamicVector<double> points; // boundary points
 	blaze::DynamicMatrix<int, blaze::columnMajor> curvatures; //segment curvatures
 	blaze::StaticMatrix<int, 3UL, 2UL, blaze::columnMajor> intervals; //segment intervals

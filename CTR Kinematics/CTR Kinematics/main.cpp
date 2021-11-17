@@ -1,9 +1,13 @@
 #include <iostream>
-#include "RobotController.h"
+//#include "RobotController.h"
+#include "Controller.h"
 
 int main() {
-	RobotController robot;
+	Controller robot;
 	robot.ControllerMenu();
+	
+
+
 
 	system("pause");
 	return 0;
