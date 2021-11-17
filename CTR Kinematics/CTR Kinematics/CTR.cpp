@@ -30,12 +30,15 @@ bool CTR::SetConfig(const blaze::StaticVector<double, 6UL>& config_new)
 
 	//check if tube tran is the same
 	if (!blaze::isZero(TubeTran - this->GetTran())) {
+		// full FK if TubeTran changes
 		this->SolveBC(TubeTran);
 		this->SolveFunc();
+		this->config = config_new;
+		this->SolveBVP(20);
+		this->SolveShape();
 	}
-
-	if (!blaze::isZero(TubeRot - this->GetRot())) {
-		// update object
+	else if (!blaze::isZero(TubeRot - this->GetRot())) {
+		// partial FK if only TubeRot changes
 		this->config = config_new;
 		this->SolveBVP(20);
 		this->SolveShape();

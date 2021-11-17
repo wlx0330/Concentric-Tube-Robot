@@ -24,10 +24,11 @@ void Kinematics::CTRIK(
 	// initialize  parameters
 	blaze::StaticVector<double, 3UL> tip_error = blaze::trans(ctr.R_tip) * (target - ctr.GetDist());
 	blaze::StaticVector<double, 6UL> config = ctr.GetConfig();
+	blaze::StaticVector<double, 6UL> delta_input;
 
 	while (blaze::norm(tip_error) > 1e-4) {
 		this->SolveJacob(ctr, target);
-		auto delta_input = this->Jacob_inv * tip_error;
+		delta_input = this->Jacob_inv * tip_error;
 		for (int i = 0; i < 3; ++i) {
 			config[i] += blaze::sum(blaze::subvector(delta_input, i, 3 - i));
 			config[i + 3] += blaze::sum(blaze::subvector(delta_input, i + 3, 3 - i));
@@ -54,21 +55,18 @@ void Kinematics::SolveJacob(
 	// init parameters
 	double h = 0.0001;
 	blaze::StaticVector<double, 3UL> tip_error = blaze::trans(ctr.R_tip) * (target - ctr.GetDist());
-	blaze::StaticVector<double, 3UL> tip_error_diff;
-	blaze::StaticVector<double, 6UL> config_diff;
-	CTR ctr_diff;
-	std::vector<std::future<void>> fu(6);
 
 	// compute spacial Jacobian in parallel
+	std::vector<std::future<void>> fu(6);
 	for (int i = 0; i < 6; ++i) {
-		fu[i] = std::async(std::launch::async, [&](int i) {
-			config_diff = ctr.GetConfig();
+		fu[i] = std::async(std::launch::async, [this, &ctr, &target, &h, &tip_error](int i) {
+			blaze::StaticVector<double, 6UL> config_diff = ctr.GetConfig();
 			i < 3 ? blaze::subvector(config_diff, 0UL, i + 1) += h
 				: blaze::subvector(config_diff, 3UL, i - 2) += h;
-			blaze::subvector(config_diff, 0UL, i + 1) += h;
-			ctr_diff = CTR(ctr);
+			CTR ctr_diff = ctr;
 			this->CTRFK(ctr_diff, config_diff);
-			tip_error_diff = blaze::trans(ctr_diff.R_tip) * (target - ctr_diff.GetDist());
+			blaze::StaticVector<double, 3UL> tip_error_diff
+				= blaze::trans(ctr_diff.R_tip) * (target - ctr_diff.GetDist());
 			blaze::column(this->Jacob, i) = (tip_error - tip_error_diff) / h;
 			}, i);
 	}
@@ -76,17 +74,18 @@ void Kinematics::SolveJacob(
 		fu[i].wait();
 	}
 
-	//	// sequencial Jacobian computation
-	//	for (int i = 0; i < 6; ++i) {
-	//		config_diff = ctr.GetConfig();
-	//		i < 3 ? blaze::subvector(config_diff, 0UL, i + 1) += h
-	//			: blaze::subvector(config_diff, 3UL, i - 2) += h;
-	//		blaze::subvector(config_diff, 0UL, i + 1) += h;
-	//		ctr_diff = CTR(ctr);
-	//		this->CTRFK(ctr_diff, config_diff);
-	//		tip_error_diff = blaze::trans(ctr_diff.R_tip) * (target - ctr_diff.GetDist());
-	//		blaze::column(this->Jacob, i) = (tip_error - tip_error_diff) / h;
-	//	}
+	//// sequencial Jacobian computation
+	//blaze::StaticVector<double, 3UL> tip_error_diff;
+	//blaze::StaticVector<double, 6UL> config_diff;
+	//for (int i = 0; i < 6; ++i) {
+	//	config_diff = ctr.GetConfig();
+	//	i < 3 ? blaze::subvector(config_diff, 0UL, i + 1) += h
+	//		: blaze::subvector(config_diff, 3UL, i - 2) += h;
+	//	CTR ctr_diff = ctr;
+	//	this->CTRFK(ctr_diff, config_diff);
+	//	tip_error_diff = blaze::trans(ctr_diff.R_tip) * (target - ctr_diff.GetDist());
+	//	blaze::column(this->Jacob, i) = (tip_error - tip_error_diff) / h;
+	//}
 
 	// compute Jacobian inverse
 	this->Jacob_inv = ctr.pinv(this->Jacob, 1e-9);

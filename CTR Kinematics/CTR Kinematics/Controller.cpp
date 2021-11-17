@@ -20,7 +20,7 @@ void Controller::CTRInfo()
 	std::cout << "Robot proximal end: " << this->DispVec3(this->ctr.GetProx()) << std::endl;
 	std::cout << "Robot distal end: " << this->DispVec3(this->ctr.GetDist()) << std::endl;
 	std::cout << std::endl;
-	// std::cout << "Target Position: " << "\t" << blaze::trans(this->target) << std::endl;
+	std::cout << "Target Position: " << this->DispVec3(this->target) << std::endl;
 	std::cout << "Computation time (ms): " << "\t" << this->timer.count() << std::endl;
 	std::cout << std::endl;
 }
@@ -33,15 +33,15 @@ void Controller::ControllerMenu()
 		std::cout << "Select one operation below: " << std::endl;
 		std::cout << "1. Test CTR forward kinematics. " << std::endl;
 		std::cout << "2. Test CTR inverse kinematics. " << std::endl;
-		std::cout << "3. Exit. " << std::endl;
+		std::cout << "0. Exit. " << std::endl;
 
 		int select;
 		std::cin >> select;
 		if (std::cin.fail()) {
-			std::cin.clear();
-			std::cin.ignore(INT_MAX, '\n');
 			select = -1;
 		}
+		std::cin.clear();
+		std::cin.ignore(INT_MAX, '\n');
 		switch (select) {
 		case 1: // CTR FK
 			this->FKMenu();
@@ -49,7 +49,7 @@ void Controller::ControllerMenu()
 		case 2: // CTR IK
 			this->IKMenu();
 			break;
-		case 3: // exit
+		case 0: // exit
 			return;
 			break;
 		default:
@@ -73,15 +73,15 @@ void Controller::FKMenu()
 		std::cout << "4. Rotate Inner Tube" << std::endl;
 		std::cout << "5. Rotate Middle Tube" << std::endl;
 		std::cout << "6. Rotate Outer Tube" << std::endl;
-		std::cout << "0. Exit CTR Forward Kinematics" << std::endl;
+		std::cout << "0. Exit CTR forward kinematics" << std::endl;
 		auto config = this->ctr.GetConfig();
 		int index;
 		std::cin >> index;
 		if (std::cin.fail()) {
-			std::cin.clear();
-			std::cin.ignore(INT_MAX, '\n');
 			index = -1;
 		}
+		std::cin.clear();
+		std::cin.ignore(INT_MAX, '\n');
 		switch (index) {
 		case 0:
 			return;
@@ -119,20 +119,70 @@ void Controller::FKMenu()
 		else {
 			std::cout << "Invalid input! " << std::endl;
 			system("pause");
-			std::cin.clear();
-			std::cin.ignore(INT_MAX, '\n');
-			continue;
 		}
+		std::cin.clear();
+		std::cin.ignore(INT_MAX, '\n');
 	}
 }
 
 // IK menu function
 void Controller::IKMenu()
 {
-	// const blaze::StaticVector<double, 3UL> target = { 0.04, 0.03, 0.11 };
-//this->target = { 0.04, 0.03, 0.11 };
-//this->ctr = this->RobotIK(this->ctr, this->target);
-//system("pause");
+	while (true) {
+		this->CTRInfo();
+		std::cout << "Select an operation: " << std::endl;
+		std::cout << "1. Change target x value" << std::endl;
+		std::cout << "2. Change target y value" << std::endl;
+		std::cout << "3. Change target z value" << std::endl;
+		std::cout << "4. Compute CTR inverse kinemtics" << std::endl;
+		std::cout << "0. Exit CTR invrese kinematics" << std::endl;
+
+		std::string axis_seed = "xyz";
+		int index;
+		std::cin >> index;
+		if (std::cin.fail()) {
+			index = -1;
+		}
+		std::cin.clear();
+		std::cin.ignore(INT_MAX, '\n');
+		switch (index) {
+		case 0:
+			return;
+			break;
+		case 1:
+		case 2:
+		case 3:
+			std::cout << "The current " << axis_seed[index - 1] << " value is : "
+				<< this->target[index - 1] << " (m)" << std::endl;
+			std::cout << "Enter a new " << axis_seed[index - 1] << " value in (m): " << std::endl;
+			double val;
+			std::cin >> val;
+			if (!std::cin.fail()) {
+				this->target[index - 1] = val;
+			}
+			else {
+				std::cout << "Invalid input! " << std::endl;
+				system("pause");
+			}
+			std::cin.clear();
+			std::cin.ignore(INT_MAX, '\n');
+			continue;
+			break;
+		case 4: {
+			auto t1 = std::chrono::high_resolution_clock::now();
+			this->kinematics.CTRIK(this->ctr, this->target);
+			auto t2 = std::chrono::high_resolution_clock::now();
+			this->timer = t2 - t1;
+			continue;
+			break;
+		}
+		default:
+			std::cout << "Invalid input! " << std::endl;
+			system("pause");
+			continue;
+			break;
+		}
+	}
 }
 
 //display column vectors
