@@ -1,0 +1,15 @@
+call C:\dev\ros2_foxy\local_setup.bat
+
+cd C:\Users\lwang848\Desktop\CTR\ROS2_ws
+
+call install\setup.bat
+
+colcon build --merge-install --packages-select ctr_kinematics
+
+--cmake-clean-cache
+
+--cmake-force-configure
+
+--cmake-args " -DCMAKE_TOOLCHAIN_FILE=C:/src/vcpkg/scripts/buildsystems/vcpkg.cmake"
+
+ros2 run ctr_kinematics ctr_node
