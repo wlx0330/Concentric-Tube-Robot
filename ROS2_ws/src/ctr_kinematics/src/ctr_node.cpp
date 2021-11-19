@@ -1,10 +1,19 @@
-#include <cstdio>
+#include <iostream>
+#include <blaze/Math.h>
 
-int main(int argc, char ** argv)
+#include "Controller.h"
+#include "rclcpp/rclcpp.hpp"
+
+int main(int argc, char **argv)
 {
-  (void) argc;
-  (void) argv;
+  (void)argc;
+  (void)argv;
 
-  printf("hello world ctr_kinematics package\n");
+
+
+  Controller robot;
+  robot.ControllerMenu();
+  std::cout << 1 << std::endl;
+  system("pause");
   return 0;
 }

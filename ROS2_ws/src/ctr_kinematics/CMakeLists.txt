@@ -22,11 +22,27 @@ find_package(std_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(blaze REQUIRED)
+find_package(LAPACK REQUIRED)
 
-add_executable(ctr_node src/ctr_node.cpp)
-target_include_directories(ctr_node PUBLIC
+set(ctr_SRCS
+  src/Tube.cpp
+  src/BC.cpp
+  src/BVP.cpp
+  src/CTR.cpp
+  src/Kinematics.cpp
+  src/Controller.cpp
+)
+
+set(ctr_HDRS
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+  $<INSTALL_INTERFACE:include>
+  include/ctr_kinematics
+)
+
+add_executable(ctr_node src/ctr_node.cpp ${ctr_SRCS})
+target_include_directories(ctr_node PUBLIC ${ctr_HDRS})
+
+ament_target_dependencies(ctr_node rclcpp blaze LAPACK)
 
 install(TARGETS ctr_node
   DESTINATION lib/${PROJECT_NAME})
