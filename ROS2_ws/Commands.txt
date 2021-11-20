@@ -13,3 +13,5 @@ colcon build --merge-install --packages-select ctr_kinematics
 --cmake-args " -DCMAKE_TOOLCHAIN_FILE=C:/src/vcpkg/scripts/buildsystems/vcpkg.cmake"
 
 ros2 run ctr_kinematics ctr_node
+
+cd C:\src\vcpkg

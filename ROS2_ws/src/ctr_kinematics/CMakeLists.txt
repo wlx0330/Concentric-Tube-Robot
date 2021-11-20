@@ -18,13 +18,14 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-# find_package(std_msgs REQUIRED)
-# find_package(rclcpp_action REQUIRED)
-# find_package(rosidl_default_generators REQUIRED)
-# find_package(blaze REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(rclcpp_action REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 
-# find_package(blaze)
-# find_package(LAPACK REQUIRED)
+
+list(APPEND CMAKE_MODULE_PATH ${BLAZE_LIBRARY_PATH}/)
+find_package(blaze CONFIG REQUIRED)
+# find_package(LAPACK CONFIG REQUIRED)
 
 set(ctr_SRCS
   src/Tube.cpp
@@ -36,8 +37,8 @@ set(ctr_SRCS
 )
 
 set(ctr_HDRS
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
+  # $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  # $<INSTALL_INTERFACE:include>
   include/ctr_kinematics
 )
 
