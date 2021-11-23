@@ -1,24 +1,34 @@
 #include <iostream>
-#include <blaze/Math.h>
+// #include <blaze/Math.h>
 
 #include "Controller.h"
 #include "rclcpp/rclcpp.hpp"
 
+class TestNode : public rclcpp::Node
+{
+public:
+  TestNode::TestNode() : Node("Test")
+  {
+    this->robot_ = Controller();
+    this->robot_.ControllerMenu();
+  }
+
+private:
+  Controller robot_;
+};
+
 int main(int argc, char **argv)
 {
-  (void)argc;
-  (void)argv;
-
-  Controller robot;
-  // robot.ControllerMenu();
-  blaze::StaticMatrix<double, 3UL, 3UL> temp;
-  temp = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-  std::cout << 1 << std::endl;
-  std::cout << temp << std::endl;
+  rclcpp::init(argc, argv);
+  // rclcpp::spin(std::make_shared<TestNode>());
+  // rclcpp::shutdown();
+  std::cout << 123131231 << std::endl;
   system("pause");
-  std::cout << blaze::inv(temp) << std::endl;
-
-
+  if (true)
+  {
+    auto robot = Controller();
+  }
+  // robot.ControllerMenu();
   system("pause");
   return 0;
 }

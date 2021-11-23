@@ -1,9 +1,10 @@
-# include "Controller.h"
+#include "Controller.h"
 
 // constructor
 Controller::Controller()
 {
-
+	std::cout << 111111 << std::endl;
+	system("pause");
 }
 
 // display tube information function
@@ -21,14 +22,16 @@ void Controller::CTRInfo()
 	std::cout << "Robot distal end: " << this->DispVec3(this->ctr.GetDist()) << std::endl;
 	std::cout << std::endl;
 	std::cout << "Target Position: " << this->DispVec3(this->target) << std::endl;
-	std::cout << "Computation time (ms): " << "\t" << this->timer.count() << std::endl;
+	std::cout << "Computation time (ms): "
+			  << "\t" << this->timer.count() << std::endl;
 	std::cout << std::endl;
 }
 
 //menu function
 void Controller::ControllerMenu()
 {
-	while (true) {
+	while (true)
+	{
 		this->CTRInfo();
 		std::cout << "Select one operation below: " << std::endl;
 		std::cout << "1. Test CTR forward kinematics. " << std::endl;
@@ -37,12 +40,14 @@ void Controller::ControllerMenu()
 
 		int select;
 		std::cin >> select;
-		if (std::cin.fail()) {
+		if (std::cin.fail())
+		{
 			select = -1;
 		}
 		std::cin.clear();
 		std::cin.ignore(INT_MAX, '\n');
-		switch (select) {
+		switch (select)
+		{
 		case 1: // CTR FK
 			this->FKMenu();
 			break;
@@ -61,10 +66,11 @@ void Controller::ControllerMenu()
 }
 
 //TODO CTR translation not working
-// FK menu function 
+// FK menu function
 void Controller::FKMenu()
 {
-	while (true) {
+	while (true)
+	{
 		this->CTRInfo();
 		std::cout << "Select an operation: " << std::endl;
 		std::cout << "1. Translate Inner Tube" << std::endl;
@@ -77,12 +83,14 @@ void Controller::FKMenu()
 		auto config = this->ctr.GetConfig();
 		int index;
 		std::cin >> index;
-		if (std::cin.fail()) {
+		if (std::cin.fail())
+		{
 			index = -1;
 		}
 		std::cin.clear();
 		std::cin.ignore(INT_MAX, '\n');
-		switch (index) {
+		switch (index)
+		{
 		case 0:
 			return;
 			break;
@@ -90,14 +98,14 @@ void Controller::FKMenu()
 		case 2:
 		case 3:
 			std::cout << "The current tube translation is: "
-				<< config[index - 1] << " (m)" << std::endl;
+					  << config[index - 1] << " (m)" << std::endl;
 			std::cout << "Enter a new translation value in (m): " << std::endl;
 			break;
 		case 4:
 		case 5:
 		case 6:
 			std::cout << "The current tube rotation is: "
-				<< config[index - 1] * 180 / M_PI << " (deg)" << std::endl;
+					  << config[index - 1] * 180 / M_PI << " (deg)" << std::endl;
 			std::cout << "Enter a new rotation value in (deg): " << std::endl;
 			break;
 		default:
@@ -109,14 +117,16 @@ void Controller::FKMenu()
 		// change tube configruations
 		double val;
 		std::cin >> val;
-		if (!std::cin.fail()) {
+		if (!std::cin.fail())
+		{
 			index < 4 ? config[index - 1] = val : config[index - 1] = val / 180 * M_PI;
 			auto t1 = std::chrono::high_resolution_clock::now();
 			this->kinematics.CTRFK(this->ctr, config);
 			auto t2 = std::chrono::high_resolution_clock::now();
 			this->timer = t2 - t1;
 		}
-		else {
+		else
+		{
 			std::cout << "Invalid input! " << std::endl;
 			system("pause");
 		}
@@ -128,7 +138,8 @@ void Controller::FKMenu()
 // IK menu function
 void Controller::IKMenu()
 {
-	while (true) {
+	while (true)
+	{
 		this->CTRInfo();
 		std::cout << "Select an operation: " << std::endl;
 		std::cout << "1. Change target x value" << std::endl;
@@ -140,12 +151,14 @@ void Controller::IKMenu()
 		std::string axis_seed = "xyz";
 		int index;
 		std::cin >> index;
-		if (std::cin.fail()) {
+		if (std::cin.fail())
+		{
 			index = -1;
 		}
 		std::cin.clear();
 		std::cin.ignore(INT_MAX, '\n');
-		switch (index) {
+		switch (index)
+		{
 		case 0:
 			return;
 			break;
@@ -153,14 +166,16 @@ void Controller::IKMenu()
 		case 2:
 		case 3:
 			std::cout << "The current " << axis_seed[index - 1] << " value is : "
-				<< this->target[index - 1] << " (m)" << std::endl;
+					  << this->target[index - 1] << " (m)" << std::endl;
 			std::cout << "Enter a new " << axis_seed[index - 1] << " value in (m): " << std::endl;
 			double val;
 			std::cin >> val;
-			if (!std::cin.fail()) {
+			if (!std::cin.fail())
+			{
 				this->target[index - 1] = val;
 			}
-			else {
+			else
+			{
 				std::cout << "Invalid input! " << std::endl;
 				system("pause");
 			}
@@ -168,7 +183,8 @@ void Controller::IKMenu()
 			std::cin.ignore(INT_MAX, '\n');
 			continue;
 			break;
-		case 4: {
+		case 4:
+		{
 			auto t1 = std::chrono::high_resolution_clock::now();
 			this->kinematics.CTRIK(this->ctr, this->target);
 			auto t2 = std::chrono::high_resolution_clock::now();
@@ -186,10 +202,11 @@ void Controller::IKMenu()
 }
 
 //display column vectors
-std::string Controller::DispVec3(const blaze::StaticVector<double, 3UL>& pos)
+std::string Controller::DispVec3(const blaze::StaticVector<double, 3UL> &pos)
 {
 	std::string s;
-	for (int i = 0; i < pos.size(); ++i) {
+	for (int i = 0; i < pos.size(); ++i)
+	{
 		s += "\t";
 		s += std::to_string(round(pos[i] * 1e6) * 1e-6);
 	}
@@ -201,7 +218,7 @@ void Controller::Test()
 {
 	auto t1 = std::chrono::high_resolution_clock::now();
 	blaze::StaticVector<double, 6UL> config;
-	config = { 0.05, 0.0, 0.0, 1.570796326794897, 0.0, 0.0 };
+	config = {0.05, 0.0, 0.0, 1.570796326794897, 0.0, 0.0};
 	this->kinematics.CTRFK(this->ctr, config);
 	auto t2 = std::chrono::high_resolution_clock::now();
 	this->timer = t2 - t1;

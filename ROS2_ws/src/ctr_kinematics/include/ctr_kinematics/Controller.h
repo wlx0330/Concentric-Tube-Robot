@@ -7,8 +7,6 @@
 #include "CTR.h"
 #include "Kinematics.h"
 
-
-
 class Controller
 {
 public:
@@ -37,7 +35,7 @@ public:
 
 private:
 	//display column vectors
-	std::string DispVec3(const blaze::StaticVector<double, 3UL>& pos);
+	std::string DispVec3(const blaze::StaticVector<double, 3UL> &pos);
 
 	// class member object CTR
 	CTR ctr;
