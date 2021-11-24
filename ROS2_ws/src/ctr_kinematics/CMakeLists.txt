@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
+
+#set(CMAKE_TOOLCHAIN_FILE "C:/src/vcpkg/scripts/buildsystems/vcpkg.cmake"
+#      CACHE STRING "")
+
 project(ctr_kinematics)
 
 # Default to C99
@@ -21,6 +25,15 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(LAPACK REQUIRED)
+
+# find_package(BLAS REQUIRED)
+
+#add_library(vcpkg INTERFACE)
+#set_target_properties(vcpkg PROPERTIES
+#  INTERFACE_INCLUDE_DIRECTORIES "C:/src/vcpkg/installed/x64-windows/include"
+#  INTERFACE_LINK_DIRECTORIES "C:/src/vcpkg/installed/x64-windows/lib"
+#)
 
 set(ctr_SRCS
   src/Tube.cpp
@@ -29,35 +42,25 @@ set(ctr_SRCS
   src/CTR.cpp
   src/Kinematics.cpp
   src/Controller.cpp
-)
-
-set(ctr_HDRS
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  include/ctr_kinematics
+  src/MyTest.cpp
 )
 
 add_library(CTRLib STATIC ${ctr_SRCS})
-target_include_directories(CTRLib 
-  PUBLIC
+target_include_directories(CTRLib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     include/ctr_kinematics)
+# target_link_libraries(CTRLib vcpkg)
 
 add_executable(ctr_node src/ctr_node.cpp)
-# add_executable(ctr_node src/ctr_node.cpp ${ctr_SRCS})
-# target_include_directories(ctr_node PUBLIC ${ctr_HDRS})
-
-add_library(vcpkg INTERFACE)
-set_target_properties(vcpkg PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "C:/src/vcpkg/installed/x64-windows/include"
-  INTERFACE_LINK_DIRECTORIES "C:/src/vcpkg/installed/x64-windows/lib"
-)
-target_link_libraries(ctr_node vcpkg CTRLib)
-
+# target_include_directories(ctr_node PUBLIC ${LAPACK_INCLUDE_DIRS})
+include_directories(${LAPACK_INCLUDE_DIRS})
+target_link_libraries(ctr_node CTRLib)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${LAPACK_LIBRARIES})
 ament_target_dependencies(ctr_node rclcpp)
 
-install(TARGETS ctr_node
+install(TARGETS 
+  ctr_node
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

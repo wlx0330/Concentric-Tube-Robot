@@ -1,11 +1,7 @@
 #include "Controller.h"
 
 // constructor
-Controller::Controller()
-{
-	std::cout << 111111 << std::endl;
-	system("pause");
-}
+// Controller::Controller() {}
 
 // display tube information function
 void Controller::CTRInfo()
@@ -65,7 +61,6 @@ void Controller::ControllerMenu()
 	}
 }
 
-//TODO CTR translation not working
 // FK menu function
 void Controller::FKMenu()
 {
@@ -215,6 +210,7 @@ std::string Controller::DispVec3(const blaze::StaticVector<double, 3UL> &pos)
 
 // test method
 void Controller::Test()
+
 {
 	auto t1 = std::chrono::high_resolution_clock::now();
 	blaze::StaticVector<double, 6UL> config;

@@ -11,7 +11,7 @@ class Controller
 {
 public:
 	// constructor
-	Controller();
+	// Controller();
 
 	// display tube information function
 	void CTRInfo();
