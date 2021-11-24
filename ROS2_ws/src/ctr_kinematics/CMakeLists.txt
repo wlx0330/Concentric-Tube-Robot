@@ -25,23 +25,23 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(LAPACK REQUIRED)
+# find_package(LAPACK REQUIRED)
 
 # find_package(BLAS REQUIRED)
 
-#add_library(vcpkg INTERFACE)
-#set_target_properties(vcpkg PROPERTIES
-#  INTERFACE_INCLUDE_DIRECTORIES "C:/src/vcpkg/installed/x64-windows/include"
-#  INTERFACE_LINK_DIRECTORIES "C:/src/vcpkg/installed/x64-windows/lib"
-#)
+add_library(vcpkg INTERFACE)
+set_target_properties(vcpkg PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "C:/src/vcpkg/installed/x64-windows/include"
+  INTERFACE_LINK_DIRECTORIES "C:/src/vcpkg/installed/x64-windows/lib"
+)
 
 set(ctr_SRCS
-  src/Tube.cpp
-  src/BC.cpp
-  src/BVP.cpp
-  src/CTR.cpp
-  src/Kinematics.cpp
-  src/Controller.cpp
+  # src/Tube.cpp
+  # src/BC.cpp
+  # src/BVP.cpp
+  # src/CTR.cpp
+  # src/Kinematics.cpp
+  # src/Controller.cpp
   src/MyTest.cpp
 )
 
@@ -50,13 +50,13 @@ target_include_directories(CTRLib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     include/ctr_kinematics)
-# target_link_libraries(CTRLib vcpkg)
+target_link_libraries(CTRLib INTERFACE vcpkg)
 
 add_executable(ctr_node src/ctr_node.cpp)
 # target_include_directories(ctr_node PUBLIC ${LAPACK_INCLUDE_DIRS})
-include_directories(${LAPACK_INCLUDE_DIRS})
+# include_directories(${LAPACK_INCLUDE_DIRS})
 target_link_libraries(ctr_node CTRLib)
-target_link_libraries(${PROJECT_NAME} PUBLIC ${LAPACK_LIBRARIES})
+# target_link_libraries(ctr_node LAPACK::LAPACK)
 ament_target_dependencies(ctr_node rclcpp)
 
 install(TARGETS 
