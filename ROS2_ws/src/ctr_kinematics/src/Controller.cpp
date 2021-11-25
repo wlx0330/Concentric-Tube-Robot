@@ -1,7 +1,9 @@
 #include "Controller.h"
 
 // constructor
-// Controller::Controller() {}
+Controller::Controller()
+{
+}
 
 // display tube information function
 void Controller::CTRInfo()

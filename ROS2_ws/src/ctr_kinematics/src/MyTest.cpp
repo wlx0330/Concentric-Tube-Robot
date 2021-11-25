@@ -8,6 +8,8 @@ void MyTest::MymyTest()
     std::cout << blaze::inv(M) << std::endl;
     system("pause");
     auto M_inv = this->pinv(M, 1e-9);
+
+    
     std::cout << M_inv << std::endl;
 }
 

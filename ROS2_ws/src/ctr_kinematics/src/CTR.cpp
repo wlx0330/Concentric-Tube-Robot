@@ -17,9 +17,7 @@ CTR::CTR()
 	this->SolveBC(blaze::subvector(this->config, 0UL, 3UL));
 	this->SolveFunc();
 	this->SolveBVP(20);
-	/*
 	this->SolveShape();
-	*/
 }
 
 // change robot configuration
@@ -327,7 +325,6 @@ void CTR::SolveBVP(const int &n_sample)
 		this->bvp.Ja_inv = this->pinv(this->bvp.Ja, 1e-9); // pinv with tol of 1e-9
 														   // this->bvp.isFirstIt = false;					   // remove flag
 	}
-	/*
 	// loop until error is small
 	while (blaze::l1Norm(this->bvp.res_new) > 1e-6) {
 		// snapping config
@@ -362,7 +359,6 @@ void CTR::SolveBVP(const int &n_sample)
 		this->bvp.res_new = this->bvp.GetRes(this->bvp.y_mesh, this->bc);
 		it++;
 	}
-*/
 }
 
 // psudo matrix inverse
@@ -374,7 +370,6 @@ blaze::DynamicMatrix<double> CTR::pinv(
 	blaze::DynamicVector<double> s; // The vector for the singular values
 	blaze::DynamicMatrix<double> V; // The matrix for the right singular vectors
 	blaze::svd(M, U, s, V);
-	/*
 	int n = s.size();
 	blaze::DynamicMatrix<double> Sinv(n, n, 0.0); // The diagonal matrix of inverted sigular values
 	for (int i = 0; i < n; ++i)
@@ -382,6 +377,5 @@ blaze::DynamicMatrix<double> CTR::pinv(
 	 blaze::abs(s[i]) < tol ? Sinv(i, i) = 0 : Sinv(i, i) = 1.0 / s[i];
 	}
 	return blaze::trans(U * Sinv * V);
-	*/
 	return U;
 }
