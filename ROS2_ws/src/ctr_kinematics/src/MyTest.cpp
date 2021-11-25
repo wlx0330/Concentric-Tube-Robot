@@ -7,7 +7,8 @@ void MyTest::MymyTest()
     std::cout << M << std::endl;
     std::cout << blaze::inv(M) << std::endl;
     system("pause");
-    //std::cout << this->pinv(M, 1e-9) << std::endl;
+    auto M_inv = this->pinv(M, 1e-9);
+    std::cout << M_inv << std::endl;
 }
 
 blaze::DynamicMatrix<double> MyTest::pinv(
