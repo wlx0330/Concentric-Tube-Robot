@@ -37,13 +37,28 @@ set_target_properties(blaze PROPERTIES
   INTERFACE_LINK_DIRECTORIES "C:/src/vcpkg/installed/x64-windows/lib"
 )
 
+set(gclib_DLL
+  "C:/Program\ Files\ (x86)/Galil/gclib/dll/x64/gclib.dll"
+  "C:/Program\ Files\ (x86)/Galil/gclib/dll/x64/gclibo.dll"
+  "C:/Program\ Files\ (x86)/Galil/gclib/dll/x64/libcrypto-3.dll"
+  "C:/Program\ Files\ (x86)/Galil/gclib/dll/x64/libssl-3.dll"
+)
+file(COPY ${gclib_DLL} DESTINATION "C:/Users/lwang848/Desktop/CTR/ROS2_ws/install/bin")
+
+add_library(gclib INTERFACE)
+set_target_properties(gclib PROPERTIES 
+  INTERFACE_INCLUDE_DIRECTORIES "C:/Program\ Files\ (x86)/Galil/gclib/include"
+  INTERFACE_LINK_DIRECTORIES "C:/Program\ Files\ (x86)/Galil/gclib/lib/dynamic/x64"
+  # INTERFACE_LINK_LIBRARIES "${gclib_LIB}"
+)
+
 set(ctr_SRCS
-  src/Tube.cpp
-  src/BC.cpp
-  src/BVP.cpp
-  src/CTR.cpp
-  src/Kinematics.cpp
-  src/Controller.cpp
+  src/CTR/Tube.cpp
+  src/CTR/BC.cpp
+  src/CTR/BVP.cpp
+  src/CTR/CTR.cpp
+  src/CTR/Kinematics.cpp
+  src/CTR/Controller.cpp
   # src/MyTest.cpp
 )
 add_library(CTRLib ${ctr_SRCS})
