@@ -55,7 +55,7 @@ bool GalilMotionController::ConTest(int i)
 }
 
 //connect motor and controller
-bool GalilMotionController::Connect(string IP, int MotorName)
+bool GalilMotionController::Connect(string IP, int MotorType)
 {
     GCon g = 0;
     string address = "--address " + IP + " --subscribe ALL";
@@ -64,7 +64,7 @@ bool GalilMotionController::Connect(string IP, int MotorName)
     {
         errTest(GInfo(g, this->buf, sizeof(this->buf)));
         // cout << this->buf << " is connected!" << endl;
-        AbstractMotor *Motor = this->MotorType(MotorName); // may require a delete at the end
+        AbstractMotor *Motor = this->MotorType(MotorType); // may require a delete at the end
         Motor->m_address = IP;
         this->vPair.push_back(make_pair(g, Motor));
         this->m_pos.push_back(0);

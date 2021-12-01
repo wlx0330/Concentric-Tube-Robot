@@ -83,6 +83,7 @@
         "forward_list": "cpp",
         "iomanip": "cpp",
         "optional": "cpp",
-        "*.idl": "cpp"
+        "*.idl": "cpp",
+        "deque": "cpp"
     }
 }

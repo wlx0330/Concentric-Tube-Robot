@@ -1,5 +1,7 @@
 #include "CTR.h"
 
+// #include <chrono>
+
 //initialize for 3 tubes
 std::array<Tube, 3UL> CTR::tubes = { Tube(), Tube(), Tube() };
 
@@ -14,10 +16,15 @@ CTR::CTR()
 	// init input (Tran & Rot)
 	blaze::subvector(this->config, 0UL, 3UL) = { 0.05, 0.0, 0.0 };
 	blaze::subvector(this->config, 3UL, 3UL) = { 0.0, 0.0, 0.0 };
+	//auto t1 = std::chrono::high_resolution_clock::now();
 	this->SolveBC(blaze::subvector(this->config, 0UL, 3UL));
 	this->SolveFunc();
 	this->SolveBVP(20);
 	this->SolveShape();
+	//auto t2 = std::chrono::high_resolution_clock::now();
+	//std::chrono::duration<double, std::milli> timer = t2 - t1;
+	//std::cout << timer.count() << std::endl;
+	//system("pause");
 }
 
 // change robot configuration

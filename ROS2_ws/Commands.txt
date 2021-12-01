@@ -17,3 +17,5 @@ ros2 run ctr_kinematics ctr_node
 cd C:\src\vcpkg
 
 colcon build --merge-install --packages-select ctr_kinematics --cmake-force-configure --cmake-args -DCMAKE_TOOLCHAIN_FILE=C:/src/vcpkg/scripts/buildsystems/vcpkg.cmake"
+
+ros2 launch ctr_sim setup.launch.py
