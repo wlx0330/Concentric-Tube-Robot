@@ -12,6 +12,9 @@ typedef unsigned int MType;
 class GalilMotors
 {
 public:
+    // default constructor
+    GalilMotors();
+
     // init class constructor
     GalilMotors(const MType &motor_type);
 

@@ -5,7 +5,7 @@
 #include <map>
 #include <thread>
 
-#include "galil_controller.h"
+// #include "galil_controller.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"

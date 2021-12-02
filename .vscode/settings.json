@@ -84,6 +84,13 @@
         "iomanip": "cpp",
         "optional": "cpp",
         "*.idl": "cpp",
-        "deque": "cpp"
+        "deque": "cpp",
+        "any": "cpp",
+        "bitset": "cpp",
+        "codecvt": "cpp",
+        "complex": "cpp",
+        "random": "cpp",
+        "stack": "cpp",
+        "strstream": "cpp"
     }
 }

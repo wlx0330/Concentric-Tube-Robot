@@ -22,6 +22,7 @@ find_package(std_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
+# add blaze api as interface library
 set(blaze_DLL
   "C:/src/vcpkg/installed/x64-windows/bin/liblapack.dll"
   "C:/src/vcpkg/installed/x64-windows/bin/libgfortran-5.dll"
@@ -30,28 +31,32 @@ set(blaze_DLL
   "C:/src/vcpkg/installed/x64-windows/bin/libquadmath-0.dll"
 )
 file(COPY ${blaze_DLL} DESTINATION "C:/Users/lwang848/Desktop/CTR/ROS2_ws/install/bin")
-
 add_library(blaze INTERFACE)
 set_target_properties(blaze PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "C:/src/vcpkg/installed/x64-windows/include"
   INTERFACE_LINK_DIRECTORIES "C:/src/vcpkg/installed/x64-windows/lib"
 )
 
+# add gclib api as interface library
 set(gclib_DLL
   "C:/Program\ Files\ (x86)/Galil/gclib/dll/x64/gclib.dll"
   "C:/Program\ Files\ (x86)/Galil/gclib/dll/x64/gclibo.dll"
   "C:/Program\ Files\ (x86)/Galil/gclib/dll/x64/libcrypto-3.dll"
   "C:/Program\ Files\ (x86)/Galil/gclib/dll/x64/libssl-3.dll"
 )
+set(gclib_LIB 
+  "C:/Program\ Files\ (x86)/Galil/gclib/lib/dynamic/x64/gclib.lib"
+  "C:/Program\ Files\ (x86)/Galil/gclib/lib/dynamic/x64/gclibo.lib"
+)
 file(COPY ${gclib_DLL} DESTINATION "C:/Users/lwang848/Desktop/CTR/ROS2_ws/install/bin")
-
 add_library(gclib INTERFACE)
 set_target_properties(gclib PROPERTIES 
   INTERFACE_INCLUDE_DIRECTORIES "C:/Program\ Files\ (x86)/Galil/gclib/include"
-  INTERFACE_LINK_DIRECTORIES "C:/Program\ Files\ (x86)/Galil/gclib/lib/dynamic/x64"
-  # INTERFACE_LINK_LIBRARIES "${gclib_LIB}"
+  # INTERFACE_LINK_DIRECTORIES "C:/Program\ Files\ (x86)/Galil/gclib/lib/dynamic/x64"
+  INTERFACE_LINK_LIBRARIES "${gclib_LIB}"
 )
 
+# add ctr kinematics code as library target
 set(ctr_SRCS
   src/CTR/Tube.cpp
   src/CTR/BC.cpp
@@ -59,21 +64,38 @@ set(ctr_SRCS
   src/CTR/CTR.cpp
   src/CTR/Kinematics.cpp
   src/CTR/Controller.cpp
-  # src/MyTest.cpp
 )
 add_library(CTRLib ${ctr_SRCS})
 target_include_directories(CTRLib PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-    include/ctr_kinematics)
-target_link_libraries(CTRLib INTERFACE blaze)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  include/ctr_kinematics)
+target_link_libraries(CTRLib blaze)
 
+# add galil controller code as library target
+set(gclib_SRCS
+  src/Galil/GalilMotionController.cpp
+  src/Galil/GalilMotors.cpp
+)
+add_library(GalilLib ${gclib_SRCS})
+target_include_directories(GalilLib PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  include/ctr_kinematics)
+target_link_libraries(GalilLib gclib)
+
+# add nodes
 add_executable(ctr_node src/ctr_node.cpp)
 target_link_libraries(ctr_node CTRLib)
 ament_target_dependencies(ctr_node rclcpp)
 
+add_executable(test_node src/test_node.cpp)
+target_link_libraries(test_node GalilLib)
+ament_target_dependencies(test_node rclcpp)
+
 install(TARGETS 
   ctr_node
+  test_node
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

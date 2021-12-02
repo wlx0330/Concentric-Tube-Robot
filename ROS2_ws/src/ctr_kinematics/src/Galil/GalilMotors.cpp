@@ -1,5 +1,8 @@
 #include "GalilMotors.h"
 
+// default constructor
+GalilMotors::GalilMotors() {}
+
 // class constructor
 GalilMotors::GalilMotors(const MType &motor_type) : _motor(motor_type) {}
 
