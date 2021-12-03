@@ -18,29 +18,35 @@ public:
     // init class constructor
     GalilMotors(const MType &motor_type);
 
-    //convert unit length/rotation inputs to encoder pulse counts for each motor
+    // convert unit length/rotation inputs to encoder pulse counts for each motor
     int unitToPulse(const float &val);
 
-    //convert encoder cnts back to metric motor actuation units
+    // convert encoder cnts back to metric motor actuation units
     float pulseToUnit(const int &val);
 
-    //get encoder pulses per unit actuation
+    // get encoder pulses per unit actuation
     float getPPU();
 
-    //get brushless modules value
+    // get brushless modules value
     std::string getBM();
 
-    //motor IP address
+    // motor IP address
     std::string ip;
 
-    //motor position
+    // motor position
     int pos;
 
-    //motor connection
+    // motor connection
     GCon gcon;
 
-    //initialization flag
+    // initialization flag
     bool isReady;
+
+    // motor max speed
+    int speed_max;
+
+    // motor speed change rate
+    int speed_coeff;
 
 private:
     //object type identifier

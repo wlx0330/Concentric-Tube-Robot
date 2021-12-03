@@ -93,8 +93,13 @@ add_executable(test_node src/test_node.cpp)
 target_link_libraries(test_node GalilLib)
 ament_target_dependencies(test_node rclcpp)
 
+add_executable(galil_node src/galil_node.cpp)
+target_link_libraries(galil_node GalilLib)
+ament_target_dependencies(galil_node rclcpp)
+
 install(TARGETS 
   ctr_node
+  galil_node
   test_node
   DESTINATION lib/${PROJECT_NAME})
 

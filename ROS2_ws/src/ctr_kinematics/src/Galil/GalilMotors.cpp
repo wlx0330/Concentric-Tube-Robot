@@ -4,7 +4,13 @@
 GalilMotors::GalilMotors() {}
 
 // class constructor
-GalilMotors::GalilMotors(const MType &motor_type) : _motor(motor_type) {}
+GalilMotors::GalilMotors(const MType &motor_type)
+    : _motor(motor_type),
+      isReady(false),
+      speed_max(0),
+      speed_coeff(0)
+{
+}
 
 //convert unit length/rotation inputs to encoder pulse counts for each motor
 int GalilMotors::unitToPulse(const float &val)

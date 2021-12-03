@@ -39,12 +39,12 @@ private:
         {
             std::cout << "init fail" << std::endl;
         }
-        this->_gmc.setMotorSpeed(0, 10, 10);
-        this->_gmc.setMotorSpeed(1, 10, 10);
-        this->_gmc.setMotorSpeed(2, 10, 10);
-        this->_gmc.setMotorSpeed(3, 10, 10);
-        this->_gmc.setMotorSpeed(4, 10, 10);
-        this->_gmc.setMotorSpeed(5, 10, 10);
+
+        for (int i = 0; i < 6; ++i)
+        {
+            this->_gmc.setMotorSpeedMax(i, 10);
+            this->_gmc.setMotorSpeedCoeff(i, 10);
+        }
 
         this->_gmc.driveMotor(0);
         this->_gmc.driveMotor(1);

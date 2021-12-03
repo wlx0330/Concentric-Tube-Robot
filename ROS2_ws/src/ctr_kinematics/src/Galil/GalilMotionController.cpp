@@ -25,6 +25,7 @@ inline void GMC::_errTest(const GReturn &rc)
         GError(rc, this->_buf, sizeof(this->_buf));
         std::cout << this->_buf << std::endl;
     }
+    //TODO else throw exception
 }
 
 // check if motor key exist
@@ -33,6 +34,7 @@ inline bool GMC::_keyTest(const int &key_val)
     auto iter = this->_motors.find(key_val);
     if (iter == this->_motors.end())
     {
+        //TODO throw exception
         return false;
     }
     else
@@ -99,9 +101,16 @@ bool GMC::initMotors()
     bool ret = true;
     for (int i = 0; i < 6; ++i)
     {
-        ret = ret && fut[i].get();
+        if (fut[i].get())
+        {
+            this->_motors[i].isReady = true;
+        }
+        else
+        {
+            return false;
+        }
     }
-    return ret;
+    return true;
 }
 
 // set motor current location
@@ -117,29 +126,51 @@ void GMC::setMotorLocation(const int &i, const int &pos_val)
     }
 }
 
-// set motor max speed and speed change rate
-void GMC::setMotorSpeed(const int &i, const int &speed, const int &rate)
+// set motor max speed
+void GMC::setMotorSpeedMax(const int &i, const int &speed)
 {
     if (this->_keyTest(i))
     {
         GCon g = this->_motors[i].gcon;
         this->_stopMotor(i);
-        auto pulse_speed = this->_motors[i].unitToPulse(speed); //convert to encoder pulse speed
-        std::string s = "SPA=" + std::to_string(pulse_speed);   //set speed
+        int pulse_speed = this->_motors[i].unitToPulse(speed); //convert to encoder pulse speed
+        std::string s = "SPA=" + std::to_string(pulse_speed);  //set speed
         this->_errTest(GCmd(g, s.c_str()));
+        int rate = this->_motors[i].speed_coeff;
         s = "ACA=" + std::to_string(pulse_speed * rate); //set acc
         this->_errTest(GCmd(g, s.c_str()));
-        s = "DCA=" + std::to_string(pulse_speed * rate); //set de-acc
+        s = "DCA=" + std::to_string(pulse_speed * rate); //set dec
         this->_errTest(GCmd(g, s.c_str()));
+        this->_motors[i].speed_max = speed;
+    }
+}
+
+// set motor speed change rate
+void GMC::setMotorSpeedCoeff(const int &i, const int &rate)
+{
+    if (this->_keyTest(i))
+    {
+        GCon g = this->_motors[i].gcon;
+        this->_stopMotor(i);
+        int pulse_speed = this->_motors[i].unitToPulse(this->_motors[i].speed_max);
+        std::string s = "ACA=" + std::to_string(pulse_speed * rate); //set acc
+        this->_errTest(GCmd(g, s.c_str()));
+        s = "DCA=" + std::to_string(pulse_speed * rate); //set dec
+        this->_errTest(GCmd(g, s.c_str()));
+        this->_motors[i].speed_coeff = rate;
     }
 }
 
 // stop motor motion
 inline void GMC::_stopMotor(const int &i)
 {
-    GCon g = this->_motors[i].gcon;
-    this->_errTest(GCmd(g, "STA"));
-    this->_errTest(GMotionComplete(g, "A"));
+    if (this->_motors[i].isReady)
+    {
+        GCon g = this->_motors[i].gcon;
+        this->_errTest(GCmd(g, "STA"));
+        this->_errTest(GMotionComplete(g, "A"));
+    }
+    //TODO else throw exception
 }
 
 // drive motor
@@ -161,9 +192,7 @@ void GMC::driveMotor(const int &i)
             }
             else
             {
-                // this->_errTest(GCmd(g, "PTA=1")); // enable position tracking
-                this->_stopMotor(i);         // stop motor
-                std::cout << i << std::endl; // test code
+                this->_stopMotor(i); // stop motor
                 std::string s = "IPA=" + std::to_string(this->_motors[i].unitToPulse(step));
                 this->_errTest(GCmd(g, s.c_str()));      // Go to new position
                 this->_errTest(GMotionComplete(g, "A")); // wait for motion to complete

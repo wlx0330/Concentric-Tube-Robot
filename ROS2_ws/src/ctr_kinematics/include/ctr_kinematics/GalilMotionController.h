@@ -28,8 +28,11 @@ public:
     // set motor current location
     void setMotorLocation(const int &i, const int &pos_val);
 
-    // set motor max speed and speed change rate
-    void setMotorSpeed(const int &i, const int &speed, const int &rate);
+    // set motor max speed
+    void setMotorSpeedMax(const int &i, const int &speed);
+
+    // set motor speed change rate
+    void setMotorSpeedCoeff(const int &i, const int &rate);
 
     // drive motor
     void driveMotor(const int &i);
