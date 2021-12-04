@@ -22,6 +22,12 @@ find_package(std_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
+# add ROS 2 interfaces
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/InitMotors.srv"
+)
+ament_export_dependencies(rosidl_default_runtime)
+
 # add blaze api as interface library
 set(blaze_DLL
   "C:/src/vcpkg/installed/x64-windows/bin/liblapack.dll"
@@ -87,14 +93,17 @@ target_link_libraries(GalilLib gclib)
 # add nodes
 add_executable(ctr_node src/ctr_node.cpp)
 target_link_libraries(ctr_node CTRLib)
+rosidl_target_interfaces(ctr_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
 ament_target_dependencies(ctr_node rclcpp)
 
 add_executable(test_node src/test_node.cpp)
 target_link_libraries(test_node GalilLib)
+rosidl_target_interfaces(test_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
 ament_target_dependencies(test_node rclcpp)
 
 add_executable(galil_node src/galil_node.cpp)
 target_link_libraries(galil_node GalilLib)
+rosidl_target_interfaces(galil_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
 ament_target_dependencies(galil_node rclcpp)
 
 install(TARGETS 

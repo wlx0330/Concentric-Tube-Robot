@@ -4,10 +4,12 @@
 #include <map>
 #include <vector>
 #include <functional>
+#include <memory>
 
 #include "GalilMotionController.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
+#include "ctr_kinematics/srv/init_motors.hpp"
 
 using namespace std::chrono_literals;
 
@@ -25,22 +27,21 @@ public:
             std::bind(&GalilNode::_setParamCB, this, std::placeholders::_1));
 
         // initialize motor setup service server
-        
-
-        // // declare motor speed parameter after init motors
-        // std::map<std::string, int> default_speed;
-        // default_speed["lin"] = 10;                          // default linear motor speed 10 mm/s
-        // default_speed["rot"] = 10;                          // default rotation motor speed 10 deg/s
-        // default_speed["coeff"] = 10;                        // default speed change rate 10 s^-1
-        // this->declare_parameters("robot_speed", default_speed);
+        this->_init_motors_srv = this->create_service<ctr_kinematics::srv::InitMotors>(
+            "InitMotors",
+            std::bind(&GalilNode::_initMotorSrvCB, this, std::placeholders::_1, std::placeholders::_2),
+            rmw_qos_profile_services_default);
     }
 
 private:
     // GMC object
     GalilMotionController _gmc;
 
-    // robot speed set callback handle
+    // parameter set callback handle
     OnSetParametersCallbackHandle::SharedPtr _param_cb_handle;
+
+    // robot init service server
+    rclcpp::Service<ctr_kinematics::srv::InitMotors>::SharedPtr _init_motors_srv;
 
     // robot speed parameter set callback function
     rcl_interfaces::msg::SetParametersResult _setParamCB(
@@ -49,10 +50,8 @@ private:
         rcl_interfaces::msg::SetParametersResult result;
         result.successful = false;
         result.reason = "";
-        std::cout << "lol param call back" << std::endl; //test code
         for (const auto &p : parameters)
         {
-            std::cout << "lol param call back" << std::endl; //test code
             // set speed for linear motors
             if (p.get_name() == "robot_speed.lin" &&
                 p.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
@@ -92,7 +91,39 @@ private:
     }
 
     // motor init service callback function
-    //void _initMotorCB(const ){}
+    void _initMotorSrvCB(
+        const ctr_kinematics::srv::InitMotors::Request::SharedPtr request,
+        ctr_kinematics::srv::InitMotors::Response::SharedPtr response)
+    {
+        // connect motors to ip
+        auto address = request->ip_address;
+        for (int i = 0; i < address.size(); ++i)
+        {
+            this->_gmc.connectMotor(i, address[i]);
+        }
+
+        // init motors
+        if (this->_gmc.initMotors())
+        {
+            RCLCPP_INFO(this->get_logger(), "Motor initialization SUCCESS! ");
+        }
+        else
+        {
+            RCLCPP_INFO(this->get_logger(), "Motor initialization FAIL! ");
+            response->is_connect = false;
+            return;
+        }
+
+        // declare motor speed parameter after init motors
+        std::map<std::string, int> speed;
+        speed["lin"] = request->motor_speed_lin;     // default linear motor speed 10 mm/s
+        speed["rot"] = request->motor_speed_rot;     // default rotation motor speed 10 deg/s
+        speed["coeff"] = request->motor_speed_coeff; // default speed change rate 10 s^-1
+        this->declare_parameters("robot_speed", speed);
+
+        // update service response
+        response->is_connect = true;
+    }
 };
 
 int main(int argc, char **argv)
