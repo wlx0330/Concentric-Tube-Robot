@@ -1,0 +1,4 @@
+int32[3] motor_step_lin 
+int32[3] motor_step_rot
+---
+bool is_motion_complete

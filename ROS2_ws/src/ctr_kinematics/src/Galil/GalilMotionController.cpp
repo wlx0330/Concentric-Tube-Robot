@@ -76,41 +76,11 @@ bool GMC::initMotor(const int &i)
             this->_errTest(GCmd(g, "BZ <1000>1500"));
             this->_errTest(GCmd(g, "BZA = 3"));
             this->_errTest(GCmd(g, "SHA"));
+            this->_motors[i].isReady = true;
             return true;
         }
     }
     return false;
-}
-
-// initialize all motor
-bool GMC::initMotors()
-{
-    std::array<std::future<bool>, 6UL> fut;
-    for (int i = 0; i < 6; ++i)
-    {
-        fut[i] = std::async(
-            std::launch::async,
-            [this](int i) -> bool
-            {
-                auto ret = this->initMotor(i);
-                return ret;
-            },
-            i);
-    }
-
-    bool ret = true;
-    for (int i = 0; i < 6; ++i)
-    {
-        if (fut[i].get())
-        {
-            this->_motors[i].isReady = true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    return true;
 }
 
 // set motor current location
@@ -199,5 +169,19 @@ void GMC::driveMotor(const int &i)
                 this->_motors[i].pos += step;            //update position
             }
         }
+    }
+}
+
+// drive motor with step
+void GMC::driveMotor(const int &i, const float &step)
+{
+    if (this->_keyTest(i))
+    {
+        GCon g = this->_motors[i].gcon;
+        this->_stopMotor(i); // stop motor
+        std::string s = "IPA=" + std::to_string(this->_motors[i].unitToPulse(step));
+        this->_errTest(GCmd(g, s.c_str()));      // Go to new position
+        this->_errTest(GMotionComplete(g, "A")); // wait for motion to complete
+        this->_motors[i].pos += step;            //update position
     }
 }

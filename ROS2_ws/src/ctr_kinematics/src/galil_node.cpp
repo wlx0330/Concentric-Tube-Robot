@@ -2,14 +2,17 @@
 #include <string>
 #include <chrono>
 #include <map>
+#include <array>
 #include <vector>
 #include <functional>
 #include <memory>
+#include <future>
 
 #include "GalilMotionController.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 #include "ctr_kinematics/srv/init_motors.hpp"
+#include "ctr_kinematics/srv/drive_motors.hpp"
 
 using namespace std::chrono_literals;
 
@@ -31,6 +34,12 @@ public:
             "InitMotors",
             std::bind(&GalilNode::_initMotorSrvCB, this, std::placeholders::_1, std::placeholders::_2),
             rmw_qos_profile_services_default);
+
+        // initialize motor drive service server
+        this->_drive_motors_srv = this->create_service<ctr_kinematics::srv::DriveMotors>(
+            "DriveMotors",
+            std::bind(&GalilNode::_driveMotorsSrvCB, this, std::placeholders::_1, std::placeholders::_2),
+            rmw_qos_profile_services_default);
     }
 
 private:
@@ -40,10 +49,7 @@ private:
     // parameter set callback handle
     OnSetParametersCallbackHandle::SharedPtr _param_cb_handle;
 
-    // robot init service server
-    rclcpp::Service<ctr_kinematics::srv::InitMotors>::SharedPtr _init_motors_srv;
-
-    // robot speed parameter set callback function
+    // parameter set callback function
     rcl_interfaces::msg::SetParametersResult _setParamCB(
         const std::vector<rclcpp::Parameter> &parameters)
     {
@@ -90,6 +96,9 @@ private:
         return result;
     }
 
+    // motor init service server
+    rclcpp::Service<ctr_kinematics::srv::InitMotors>::SharedPtr _init_motors_srv;
+
     // motor init service callback function
     void _initMotorSrvCB(
         const ctr_kinematics::srv::InitMotors::Request::SharedPtr request,
@@ -97,21 +106,40 @@ private:
     {
         // connect motors to ip
         auto address = request->ip_address;
+        std::vector<std::future<bool>> fut(address.size());
+
         for (int i = 0; i < address.size(); ++i)
         {
-            this->_gmc.connectMotor(i, address[i]);
+            // set lambda function
+            fut[i] = std::async(
+                std::launch::async,
+                [this, &address](int i) -> bool
+                {
+                    if (this->_gmc.connectMotor(i, address[i]))
+                    {
+                        return this->_gmc.initMotor(i);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                },
+                i);
         }
 
-        // init motors
-        if (this->_gmc.initMotors())
+        // init result
+        for (int i = 0; i < address.size(); ++i)
         {
-            RCLCPP_INFO(this->get_logger(), "Motor initialization SUCCESS! ");
-        }
-        else
-        {
-            RCLCPP_INFO(this->get_logger(), "Motor initialization FAIL! ");
-            response->is_connect = false;
-            return;
+            if (fut[i].get())
+            {
+                RCLCPP_INFO(this->get_logger(), "Motor %d initialization SUCCESS!", i);
+            }
+            else
+            {
+                RCLCPP_INFO(this->get_logger(), "Motor %d initialization FAIL!", i);
+                response->is_connect = false;
+                return;
+            }
         }
 
         // declare motor speed parameter after init motors
@@ -123,6 +151,43 @@ private:
 
         // update service response
         response->is_connect = true;
+    }
+
+    // drive motor service server
+    rclcpp::Service<ctr_kinematics::srv::DriveMotors>::SharedPtr _drive_motors_srv;
+
+    // drive motor service callback function
+    void _driveMotorsSrvCB(
+        const ctr_kinematics::srv::DriveMotors::Request::SharedPtr request,
+        ctr_kinematics::srv::DriveMotors::Response::SharedPtr response)
+    {
+        auto temp = request->motor_step_lin;
+        //std::vector<int> step;
+        // std::vector<int> step;
+        // step.reserve(request->motor_step_lin.size() + request->motor_step_rot.size());
+        // step.insert(step.end(), request->motor_step_lin.begin(), request->motor_step_lin.end());
+        // step.insert(step.end(), request->motor_step_rot.begin(), request->motor_step_rot.end());
+        std::vector<std::future<void>> fut(6);
+
+        // const float motor_step = 0.f;
+
+        for (int i = 0; i < 6; ++i)
+        {
+            fut[i] = std::async(
+                std::launch::async,
+                [this, &temp](int i) -> void
+                {
+                    this->_gmc.driveMotor(i);
+                    this->_gmc.driveMotor(i, temp[0]);
+                },
+                i);
+        }
+
+        for (int i = 0; i < 6; ++i)
+        {
+            fut[i].wait();
+        }
+        response->is_motion_complete = true;
     }
 };
 

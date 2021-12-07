@@ -25,6 +25,7 @@ find_package(rosidl_default_generators REQUIRED)
 # add ROS 2 interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/InitMotors.srv"
+  "srv/DriveMotors.srv"
 )
 ament_export_dependencies(rosidl_default_runtime)
 
@@ -96,18 +97,24 @@ target_link_libraries(ctr_node CTRLib)
 rosidl_target_interfaces(ctr_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
 ament_target_dependencies(ctr_node rclcpp)
 
-add_executable(test_node src/test_node.cpp)
-target_link_libraries(test_node GalilLib)
-rosidl_target_interfaces(test_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
-ament_target_dependencies(test_node rclcpp)
+add_executable(kinematics_node src/kinematics_node.cpp)
+target_link_libraries(kinematics_node CTRLib)
+rosidl_target_interfaces(kinematics_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
+ament_target_dependencies(kinematics_node rclcpp)
 
 add_executable(galil_node src/galil_node.cpp)
 target_link_libraries(galil_node GalilLib)
 rosidl_target_interfaces(galil_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
 ament_target_dependencies(galil_node rclcpp)
 
+add_executable(test_node src/test_node.cpp)
+target_link_libraries(test_node GalilLib)
+rosidl_target_interfaces(test_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
+ament_target_dependencies(test_node rclcpp)
+
 install(TARGETS 
   ctr_node
+  kinematics_node
   galil_node
   test_node
   DESTINATION lib/${PROJECT_NAME})

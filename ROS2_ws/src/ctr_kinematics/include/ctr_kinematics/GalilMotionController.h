@@ -22,9 +22,6 @@ public:
     // initialize motor
     bool initMotor(const int &i);
 
-    // initialize all motor
-    bool initMotors();
-
     // set motor current location
     void setMotorLocation(const int &i, const int &pos_val);
 
@@ -36,6 +33,9 @@ public:
 
     // drive motor
     void driveMotor(const int &i);
+
+    // drive motor with step
+    void driveMotor(const int &i, const float &step);
 
 private:
     // check command error
