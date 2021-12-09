@@ -4,15 +4,20 @@
 #include <map>
 #include <array>
 #include <vector>
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <future>
+#include <thread>
 
 #include "GalilMotionController.h"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
+#include "ctr_kinematics/msg/robot_config.hpp"
 #include "ctr_kinematics/srv/init_motors.hpp"
 #include "ctr_kinematics/srv/drive_motors.hpp"
+#include "ctr_kinematics/action/robot_teleop.hpp"
 
 using namespace std::chrono_literals;
 
@@ -25,26 +30,82 @@ public:
         // initialize private members
         this->_gmc = GalilMotionController();
 
-        // initialize parameter callback handle for all params
-        this->_param_cb_handle = this->add_on_set_parameters_callback(
-            std::bind(&GalilNode::_setParamCB, this, std::placeholders::_1));
-
         // initialize motor setup service server
         this->_init_motors_srv = this->create_service<ctr_kinematics::srv::InitMotors>(
             "InitMotors",
             std::bind(&GalilNode::_initMotorSrvCB, this, std::placeholders::_1, std::placeholders::_2),
-            rmw_qos_profile_services_default);
-
-        // initialize motor drive service server
-        this->_drive_motors_srv = this->create_service<ctr_kinematics::srv::DriveMotors>(
-            "DriveMotors",
-            std::bind(&GalilNode::_driveMotorsSrvCB, this, std::placeholders::_1, std::placeholders::_2),
             rmw_qos_profile_services_default);
     }
 
 private:
     // GMC object
     GalilMotionController _gmc;
+
+    // motor init service server
+    rclcpp::Service<ctr_kinematics::srv::InitMotors>::SharedPtr _init_motors_srv;
+
+    // motor init service callback function
+    void _initMotorSrvCB(
+        const ctr_kinematics::srv::InitMotors::Request::SharedPtr request,
+        ctr_kinematics::srv::InitMotors::Response::SharedPtr response)
+    {
+        // connect motors to ip
+        auto address = request->ip_address;
+        std::vector<std::future<bool>> fut(address.size());
+
+        // async motor init
+        for (int i = 0; i < address.size(); ++i)
+        {
+            // set lambda function
+            fut[i] = std::async(
+                std::launch::async,
+                [this, &address](int i) -> bool
+                {
+                    if (this->_gmc.connectMotor(i, address[i]))
+                    {
+                        return this->_gmc.initMotor(i);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                },
+                i);
+        }
+        for (int i = 0; i < address.size(); ++i)
+        {
+            if (fut[i].get())
+            {
+                RCLCPP_INFO(this->get_logger(), "Motor %d initialization SUCCESS!", i);
+            }
+            else
+            {
+                RCLCPP_INFO(this->get_logger(), "Motor %d initialization FAIL!", i);
+                response->is_connect = false;
+                return;
+            }
+        }
+
+        // initialize parameter callback handle for all params
+        this->_param_cb_handle = this->add_on_set_parameters_callback(
+            std::bind(&GalilNode::_setParamCB, this, std::placeholders::_1));
+
+        // declare motor speed parameter after init motors
+        std::map<std::string, int> speed;
+        speed["lin"] = request->motor_speed_lin;     // default linear motor speed 10 mm/s
+        speed["rot"] = request->motor_speed_rot;     // default rotation motor speed 10 deg/s
+        speed["coeff"] = request->motor_speed_coeff; // default speed change rate 10 s^-1
+        this->declare_parameters("robot_speed", speed);
+
+        // initialize motor drive service server
+        this->_drive_motors_srv = this->create_service<ctr_kinematics::srv::DriveMotors>(
+            "DriveMotors",
+            std::bind(&GalilNode::_driveMotorsSrvCB, this, std::placeholders::_1, std::placeholders::_2),
+            rmw_qos_profile_services_default);
+
+        // update service response
+        response->is_connect = true;
+    }
 
     // parameter set callback handle
     OnSetParametersCallbackHandle::SharedPtr _param_cb_handle;
@@ -96,63 +157,6 @@ private:
         return result;
     }
 
-    // motor init service server
-    rclcpp::Service<ctr_kinematics::srv::InitMotors>::SharedPtr _init_motors_srv;
-
-    // motor init service callback function
-    void _initMotorSrvCB(
-        const ctr_kinematics::srv::InitMotors::Request::SharedPtr request,
-        ctr_kinematics::srv::InitMotors::Response::SharedPtr response)
-    {
-        // connect motors to ip
-        auto address = request->ip_address;
-        std::vector<std::future<bool>> fut(address.size());
-
-        for (int i = 0; i < address.size(); ++i)
-        {
-            // set lambda function
-            fut[i] = std::async(
-                std::launch::async,
-                [this, &address](int i) -> bool
-                {
-                    if (this->_gmc.connectMotor(i, address[i]))
-                    {
-                        return this->_gmc.initMotor(i);
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                },
-                i);
-        }
-
-        // init result
-        for (int i = 0; i < address.size(); ++i)
-        {
-            if (fut[i].get())
-            {
-                RCLCPP_INFO(this->get_logger(), "Motor %d initialization SUCCESS!", i);
-            }
-            else
-            {
-                RCLCPP_INFO(this->get_logger(), "Motor %d initialization FAIL!", i);
-                response->is_connect = false;
-                return;
-            }
-        }
-
-        // declare motor speed parameter after init motors
-        std::map<std::string, int> speed;
-        speed["lin"] = request->motor_speed_lin;     // default linear motor speed 10 mm/s
-        speed["rot"] = request->motor_speed_rot;     // default rotation motor speed 10 deg/s
-        speed["coeff"] = request->motor_speed_coeff; // default speed change rate 10 s^-1
-        this->declare_parameters("robot_speed", speed);
-
-        // update service response
-        response->is_connect = true;
-    }
-
     // drive motor service server
     rclcpp::Service<ctr_kinematics::srv::DriveMotors>::SharedPtr _drive_motors_srv;
 
@@ -161,33 +165,89 @@ private:
         const ctr_kinematics::srv::DriveMotors::Request::SharedPtr request,
         ctr_kinematics::srv::DriveMotors::Response::SharedPtr response)
     {
-        auto temp = request->motor_step_lin;
-        //std::vector<int> step;
-        // std::vector<int> step;
-        // step.reserve(request->motor_step_lin.size() + request->motor_step_rot.size());
-        // step.insert(step.end(), request->motor_step_lin.begin(), request->motor_step_lin.end());
-        // step.insert(step.end(), request->motor_step_rot.begin(), request->motor_step_rot.end());
+        std::vector<float> step(6);
+        for (int i = 0; i < request->motor_step_lin.size(); ++i)
+        {
+            step[i] = request->motor_step_lin[i];
+        }
+        for (int i = 0; i < request->motor_step_rot.size(); ++i)
+        {
+            step[3 + i] = request->motor_step_rot[i];
+        }
+
+        // set up async execution
         std::vector<std::future<void>> fut(6);
-
-        // const float motor_step = 0.f;
-
-        for (int i = 0; i < 6; ++i)
+        for (int i = 0; i < step.size(); ++i)
         {
             fut[i] = std::async(
                 std::launch::async,
-                [this, &temp](int i) -> void
+                [this, &step](int i) -> void
                 {
-                    this->_gmc.driveMotor(i);
-                    this->_gmc.driveMotor(i, temp[0]);
+                    this->_gmc.driveMotor(i, step[i]);
                 },
                 i);
         }
-
-        for (int i = 0; i < 6; ++i)
+        for (int i = 0; i < step.size(); ++i)
         {
             fut[i].wait();
         }
+
+        //update response
         response->is_motion_complete = true;
+    }
+
+    // motor target configuration subscriber
+    rclcpp::Subscription<ctr_kinematics::msg::RobotConfig>::SharedPtr _joint_config_sub;
+
+    // motor target configuration sub callback
+    void _jointConfigSubCB(const ctr_kinematics::msg::RobotConfig::SharedPtr target_config)
+    {
+        std::cout << "_jointConfigSubCB" << std::endl; // test code
+    }
+
+    //teleop action server object
+    rclcpp_action::Server<ctr_kinematics::action::RobotTeleop>::SharedPtr _teleop_action_srv;
+
+    // teleop action goal server
+    rclcpp_action::GoalResponse _TeleopActionHandleGoal(
+        const rclcpp_action::GoalUUID &uuid,
+        // std::shared_ptr<const ctr_kinematics::action::RobotTeleop::Goal> goal
+        ctr_kinematics::action::RobotTeleop::Goal::ConstPtr goal)
+    {
+        if (goal->init_teleop)
+        {
+            RCLCPP_INFO(this->get_logger(), "Received teleop request, checking motors before action...");
+            (void)uuid;
+            return rclcpp_action::GoalResponse::ACCEPT;
+        }
+        else
+        {
+            return rclcpp_action::GoalResponse::REJECT;
+        }
+    }
+
+    // teleop action cancel server
+    rclcpp_action::CancelResponse _TeleopActionHandleCancel(
+        const std::shared_ptr<rclcpp_action::ServerGoalHandle<ctr_kinematics::action::RobotTeleop>> goal_handle)
+    {
+        RCLCPP_INFO(this->get_logger(), "Received cancel request, stopping teleop...");
+        (void)goal_handle;
+        return rclcpp_action::CancelResponse::ACCEPT;
+    }
+
+    // teleop action accept server
+    void _TeleopActionHandleAccept(
+        const std::shared_ptr<rclcpp_action::ServerGoalHandle<ctr_kinematics::action::RobotTeleop>> goal_handle)
+    {
+        std::thread{std::bind(&GalilNode::_TeleopActionExecute, this, std::placeholders::_1),
+                    goal_handle}
+            .detach();
+    }
+
+    // teleop action execution function
+    void _TeleopActionExecute(
+        const std::shared_ptr<rclcpp_action::ServerGoalHandle<ctr_kinematics::action::RobotTeleop>> goal_handle)
+    {
     }
 };
 
@@ -195,6 +255,7 @@ int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<GalilNode>());
+    std::cout << "node ending" << std::endl; //test code
     rclcpp::shutdown();
     return 0;
 }

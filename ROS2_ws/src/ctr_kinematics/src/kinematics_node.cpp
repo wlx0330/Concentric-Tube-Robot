@@ -19,7 +19,10 @@ public:
     }
 
 private:
+    // CTR controller class
     Controller robot_;
+
+    //
 };
 
 int main(int argc, char **argv)

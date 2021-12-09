@@ -24,8 +24,10 @@ find_package(rosidl_default_generators REQUIRED)
 
 # add ROS 2 interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/RobotConfig.msg"
   "srv/InitMotors.srv"
   "srv/DriveMotors.srv"
+  "action/RobotTeleop.action"
 )
 ament_export_dependencies(rosidl_default_runtime)
 
@@ -72,7 +74,7 @@ set(ctr_SRCS
   src/CTR/Kinematics.cpp
   src/CTR/Controller.cpp
 )
-add_library(CTRLib ${ctr_SRCS})
+add_library(CTRLib STATIC ${ctr_SRCS})
 target_include_directories(CTRLib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
@@ -84,7 +86,7 @@ set(gclib_SRCS
   src/Galil/GalilMotionController.cpp
   src/Galil/GalilMotors.cpp
 )
-add_library(GalilLib ${gclib_SRCS})
+add_library(GalilLib STATIC ${gclib_SRCS})
 target_include_directories(GalilLib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
@@ -95,22 +97,22 @@ target_link_libraries(GalilLib gclib)
 add_executable(ctr_node src/ctr_node.cpp)
 target_link_libraries(ctr_node CTRLib)
 rosidl_target_interfaces(ctr_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
-ament_target_dependencies(ctr_node rclcpp)
+ament_target_dependencies(ctr_node rclcpp rclcpp_action)
 
 add_executable(kinematics_node src/kinematics_node.cpp)
 target_link_libraries(kinematics_node CTRLib)
 rosidl_target_interfaces(kinematics_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
-ament_target_dependencies(kinematics_node rclcpp)
+ament_target_dependencies(kinematics_node rclcpp rclcpp_action)
 
 add_executable(galil_node src/galil_node.cpp)
 target_link_libraries(galil_node GalilLib)
 rosidl_target_interfaces(galil_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
-ament_target_dependencies(galil_node rclcpp)
+ament_target_dependencies(galil_node rclcpp rclcpp_action)
 
 add_executable(test_node src/test_node.cpp)
 target_link_libraries(test_node GalilLib)
 rosidl_target_interfaces(test_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
-ament_target_dependencies(test_node rclcpp)
+ament_target_dependencies(test_node rclcpp rclcpp_action)
 
 install(TARGETS 
   ctr_node

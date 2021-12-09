@@ -17,7 +17,6 @@ public:
     {
         this->_gmc = GalilMotionController();
         this->_init_motors_cli = this->create_client<ctr_kinematics::srv::InitMotors>("InitMotors");
-        this->_move_motors_cli = this->create_client<ctr_kinematics::srv::DriveMotors>("DriveMotors");
         // this->_timer = this->create_wall_timer(
         //     3000ms,
         //     std::bind(&TestNode::_timerCB, this));
@@ -29,8 +28,8 @@ public:
     // server client
     rclcpp::Client<ctr_kinematics::srv::InitMotors>::SharedPtr _init_motors_cli;
 
-    // move motor client
-    rclcpp::Client<ctr_kinematics::srv::DriveMotors>::SharedPtr _move_motors_cli;
+    // drive motor client
+    rclcpp::Client<ctr_kinematics::srv::DriveMotors>::SharedPtr _drive_motors_cli;
 
     // action timer
     rclcpp::TimerBase::SharedPtr _timer;
@@ -74,11 +73,23 @@ int main(int argc, char **argv)
         if (response.get()->is_connect)
         {
             RCLCPP_INFO(test_node->get_logger(), "All motors are initialized. Starting motor motion...");
+            test_node->_drive_motors_cli = test_node->create_client<ctr_kinematics::srv::DriveMotors>("DriveMotors");
             auto request2 = std::make_shared<ctr_kinematics::srv::DriveMotors::Request>();
-            request2->motor_step_lin = {10, 10, 10};
-            request2->motor_step_rot = {360, 360, 360};
-            auto response = test_node->_move_motors_cli->async_send_request(request2);
-            RCLCPP_INFO(test_node->get_logger(), "move_motor request has been sent. ");
+            request2->motor_step_lin = {10.f, 10.f, 10.f};
+            request2->motor_step_rot = {360.f, 360.f, 360.f};
+            auto response2 = test_node->_drive_motors_cli->async_send_request(request2);
+            RCLCPP_INFO(test_node->get_logger(), "drive_motor request has been sent. ");
+            while (!test_node->_drive_motors_cli->wait_for_service(3s))
+            {
+                if (!rclcpp::ok())
+                {
+                    RCLCPP_INFO(test_node->get_logger(), "Interrupted while waiting for the service. Exiting...");
+                    rclcpp::shutdown();
+                    break;
+                }
+                RCLCPP_INFO(test_node->get_logger(), "motor_init service not available, waiting again...");
+            }
+            rclcpp::spin_until_future_complete(test_node, response2);
         }
     }
     rclcpp::shutdown();
