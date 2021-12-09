@@ -218,7 +218,7 @@ private:
         {
             RCLCPP_INFO(this->get_logger(), "Received teleop request, checking motors before action...");
             (void)uuid;
-            return rclcpp_action::GoalResponse::ACCEPT;
+            return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
         }
         else
         {
