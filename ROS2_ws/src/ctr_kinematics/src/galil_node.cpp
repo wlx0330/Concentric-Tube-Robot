@@ -103,6 +103,13 @@ private:
             std::bind(&GalilNode::_driveMotorsSrvCB, this, std::placeholders::_1, std::placeholders::_2),
             rmw_qos_profile_services_default);
 
+        // init track motor action
+        this->_teleop_action_srv = rclcpp_action::create_server<ctr_kinematics::action::RobotTeleop>(
+            this, "TeleOperation",
+            std::bind(&GalilNode::_TeleopActionHandleGoal, this, std::placeholders::_1, std::placeholders::_2),
+            std::bind(&GalilNode::_TeleopActionHandleCancel, this, std::placeholders::_1),
+            std::bind(&GalilNode::_TeleopActionHandleAccept, this, std::placeholders::_1));
+
         // update service response
         response->is_connect = true;
     }
@@ -217,6 +224,9 @@ private:
         if (goal->init_teleop)
         {
             RCLCPP_INFO(this->get_logger(), "Received teleop request, checking motors before action...");
+
+            // TODO move motor to home position
+
             (void)uuid;
             return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
         }
@@ -231,6 +241,10 @@ private:
         const std::shared_ptr<rclcpp_action::ServerGoalHandle<ctr_kinematics::action::RobotTeleop>> goal_handle)
     {
         RCLCPP_INFO(this->get_logger(), "Received cancel request, stopping teleop...");
+
+        // TODO stop all motor motion
+        // TODO stop the motor pos subscriber
+
         (void)goal_handle;
         return rclcpp_action::CancelResponse::ACCEPT;
     }
@@ -248,6 +262,9 @@ private:
     void _TeleopActionExecute(
         const std::shared_ptr<rclcpp_action::ServerGoalHandle<ctr_kinematics::action::RobotTeleop>> goal_handle)
     {
+        // TODO check if cancel
+        // TODO create motor pos subscriber
+        // TODO init feedback
     }
 };
 

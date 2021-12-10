@@ -3,9 +3,11 @@
 #include <string>
 
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
 #include "GalilMotionController.h"
 #include "ctr_kinematics/srv/init_motors.hpp"
 #include "ctr_kinematics/srv/drive_motors.hpp"
+#include "ctr_kinematics/action/robot_teleop.hpp"
 
 using namespace std::chrono_literals;
 
@@ -17,6 +19,9 @@ public:
     {
         this->_gmc = GalilMotionController();
         this->_init_motors_cli = this->create_client<ctr_kinematics::srv::InitMotors>("InitMotors");
+        this->teleop_action_cli = rclcpp_action::create_client<ctr_kinematics::action::RobotTeleop>(
+            this, "TeleOperation");
+
         // this->_timer = this->create_wall_timer(
         //     3000ms,
         //     std::bind(&TestNode::_timerCB, this));
@@ -36,6 +41,74 @@ public:
 
     //timer callback function
     //void _timerCB() {}
+
+    /////////////////////////// Action Stuff /////////////////////
+    // action client object
+    rclcpp_action::Client<ctr_kinematics::action::RobotTeleop>::SharedPtr teleop_action_cli;
+
+    // action client send function
+    void teleop_action_send()
+    {
+        if (!this->teleop_action_cli->wait_for_action_server())
+        {
+            RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
+            rclcpp::shutdown();
+        }
+
+        auto goal_msg = ctr_kinematics::action::RobotTeleop::Goal();
+        goal_msg.init_teleop = true;
+
+        RCLCPP_INFO(this->get_logger(), "Sending goal");
+    }
+
+    // action client goal response CB
+    void TeleopActionGoalResponseCb(
+        std::shared_future<rclcpp_action::ClientGoalHandle<ctr_kinematics::action::RobotTeleop>::SharedPtr>
+            future)
+    {
+        auto goal_handle = future.get();
+        if (!goal_handle)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
+        }
+        else
+        {
+            RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
+        }
+    }
+
+    // action client feedback CB
+    void TeleopActionFeedbackCb(
+        rclcpp_action::ClientGoalHandle<ctr_kinematics::action::RobotTeleop>::SharedPtr,
+        // const std::shared_ptr<const ctr_kinematics::action::RobotTeleop::Feedback> f,
+        const ctr_kinematics::action::RobotTeleop::Feedback::ConstPtr feedback)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            std::cout << feedback->joint_error_rot[0] << std::endl; // test code
+        }
+    }
+
+    // action result callback
+    void TeleopActionResultCb(
+        const rclcpp_action::ClientGoalHandle<ctr_kinematics::action::RobotTeleop>::WrappedResult
+            &result)
+    {
+        switch (result.code)
+        {
+        case rclcpp_action::ResultCode::SUCCEEDED:
+            break;
+        case rclcpp_action::ResultCode::ABORTED:
+            RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
+            return;
+        case rclcpp_action::ResultCode::CANCELED:
+            RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
+            return;
+        default:
+            RCLCPP_ERROR(this->get_logger(), "Unknown result code");
+            return;
+        }
+        }
 };
 
 int main(int argc, char **argv)

@@ -76,7 +76,7 @@ bool GMC::initMotor(const int &i)
             this->_errTest(GCmd(g, "BZ <1000>1500"));
             this->_errTest(GCmd(g, "BZA = 3"));
             this->_errTest(GCmd(g, "SHA"));
-            this->_motors[i].isReady = true;
+            this->_motors[i].is_ready = true;
             return true;
         }
     }
@@ -92,7 +92,9 @@ void GMC::setMotorLocation(const int &i, const int &pos_val)
         this->_stopMotor(i);
         std::string s = "DPA=" + std::to_string(this->_motors[i].unitToPulse(pos_val));
         this->_errTest(GCmd(g, s.c_str()));
+        this->_errTest(GCmd(g, "PTA=1"));
         this->_motors[i].pos = pos_val;
+        this->_motors[i].is_tracking = true;
     }
 }
 
@@ -134,7 +136,7 @@ void GMC::setMotorSpeedCoeff(const int &i, const int &rate)
 // stop motor motion
 inline void GMC::_stopMotor(const int &i)
 {
-    if (this->_motors[i].isReady)
+    if (this->_motors[i].is_ready)
     {
         GCon g = this->_motors[i].gcon;
         this->_errTest(GCmd(g, "STA"));
@@ -184,4 +186,21 @@ void GMC::driveMotor(const int &i, const float &step)
         this->_errTest(GMotionComplete(g, "A")); // wait for motion to complete
         this->_motors[i].pos += step;            //update position
     }
+}
+
+// enable motor position tracking mode
+void GMC::trackMotor(const int &i, const float &track_val)
+{
+    if (!this->_keyTest(i))
+    {
+        return;
+    }
+    if (!this->_motors[i].is_tracking)
+    {
+        return;
+    }
+    GCon g = this->_motors[i].gcon;
+    std::string s = "PAA=" + std::to_string(this->_motors[i].unitToPulse(track_val));
+    this->_errTest(GCmd(g, s.c_str()));
+    this->_motors[i].pos = track_val;
 }

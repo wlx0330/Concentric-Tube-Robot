@@ -36,11 +36,14 @@ public:
     // motor position
     int pos;
 
+    // motor tracking mode if motor is calibrated
+    bool is_tracking;
+
     // motor connection
     GCon gcon;
 
-    // initialization flag
-    bool isReady;
+    // initialization flag if motor is ready to move
+    bool is_ready;
 
     // motor max speed
     int speed_max;

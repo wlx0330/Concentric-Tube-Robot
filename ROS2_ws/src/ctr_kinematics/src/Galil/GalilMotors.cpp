@@ -6,7 +6,9 @@ GalilMotors::GalilMotors() {}
 // class constructor
 GalilMotors::GalilMotors(const MType &motor_type)
     : _motor(motor_type),
-      isReady(false),
+      is_ready(false),
+      is_tracking(false),
+      pos(0),
       speed_max(0),
       speed_coeff(0)
 {

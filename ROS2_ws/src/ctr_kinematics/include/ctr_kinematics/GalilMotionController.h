@@ -37,6 +37,9 @@ public:
     // drive motor with step
     void driveMotor(const int &i, const float &step);
 
+    // enable motor position tracking mode
+    void trackMotor(const int &i, const float &pos_val);
+
 private:
     // check command error
     inline void _errTest(const GReturn &rc);
