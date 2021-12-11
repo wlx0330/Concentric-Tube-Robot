@@ -27,6 +27,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotConfig.msg"
   "srv/InitMotors.srv"
   "srv/DriveMotors.srv"
+  "srv/EnableActions.srv"
   "action/RobotTeleop.action"
 )
 ament_export_dependencies(rosidl_default_runtime)

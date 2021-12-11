@@ -54,11 +54,22 @@ public:
             RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
             rclcpp::shutdown();
         }
-
         auto goal_msg = ctr_kinematics::action::RobotTeleop::Goal();
-        goal_msg.init_teleop = true;
-
+        goal_msg.init_config_tran = {0, 0, 0};
+        goal_msg.init_config_rot = {90, 90, 90};
         RCLCPP_INFO(this->get_logger(), "Sending goal");
+
+        // set send goal options
+        auto send_goal_options = rclcpp_action::Client<ctr_kinematics::action::RobotTeleop>::SendGoalOptions();
+        send_goal_options.goal_response_callback = std::bind(
+            &TestNode::TeleopActionGoalResponseCb, this, std::placeholders::_1);
+        send_goal_options.feedback_callback = std::bind(
+            &TestNode::TeleopActionFeedbackCb, this, std::placeholders::_1, std::placeholders::_2);
+        send_goal_options.result_callback = std::bind(
+            &TestNode::TeleopActionResultCb, this, std::placeholders::_1);
+
+        // send goal
+        this->teleop_action_cli->async_send_goal(goal_msg, send_goal_options);
     }
 
     // action client goal response CB
@@ -66,6 +77,7 @@ public:
         std::shared_future<rclcpp_action::ClientGoalHandle<ctr_kinematics::action::RobotTeleop>::SharedPtr>
             future)
     {
+        std::cout << "action client goal response cb" << std::endl; //test code
         auto goal_handle = future.get();
         if (!goal_handle)
         {
@@ -87,6 +99,7 @@ public:
         {
             std::cout << feedback->joint_error_rot[0] << std::endl; // test code
         }
+        this->teleop_action_cli->async_cancel_all_goals();
     }
 
     // action result callback
@@ -108,7 +121,7 @@ public:
             RCLCPP_ERROR(this->get_logger(), "Unknown result code");
             return;
         }
-        }
+    }
 };
 
 int main(int argc, char **argv)
@@ -130,7 +143,7 @@ int main(int argc, char **argv)
     // init parameters
     auto request = std::make_shared<ctr_kinematics::srv::InitMotors::Request>();
     request->motor_speed_lin = 10;
-    request->motor_speed_rot = 10;
+    request->motor_speed_rot = 30;
     request->motor_speed_coeff = 10;
     request->ip_address.resize(6UL);
     request->ip_address[0] = ("192.168.42.0");
@@ -148,7 +161,7 @@ int main(int argc, char **argv)
             RCLCPP_INFO(test_node->get_logger(), "All motors are initialized. Starting motor motion...");
             test_node->_drive_motors_cli = test_node->create_client<ctr_kinematics::srv::DriveMotors>("DriveMotors");
             auto request2 = std::make_shared<ctr_kinematics::srv::DriveMotors::Request>();
-            request2->motor_step_lin = {10.f, 10.f, 10.f};
+            request2->motor_step_lin = {0.f, 0.f, 0.f};
             request2->motor_step_rot = {360.f, 360.f, 360.f};
             auto response2 = test_node->_drive_motors_cli->async_send_request(request2);
             RCLCPP_INFO(test_node->get_logger(), "drive_motor request has been sent. ");
@@ -163,6 +176,10 @@ int main(int argc, char **argv)
                 RCLCPP_INFO(test_node->get_logger(), "motor_init service not available, waiting again...");
             }
             rclcpp::spin_until_future_complete(test_node, response2);
+
+            // action test
+            test_node->teleop_action_send();
+            rclcpp::spin(test_node);
         }
     }
     rclcpp::shutdown();

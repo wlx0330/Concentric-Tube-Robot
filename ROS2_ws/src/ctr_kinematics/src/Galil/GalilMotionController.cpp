@@ -145,6 +145,16 @@ inline void GMC::_stopMotor(const int &i)
     //TODO else throw exception
 }
 
+// stop all motor motion
+void GMC::stopAllMotors()
+{
+    for (int i = 0; i < this->_motors.size(); ++i)
+    {
+        this->_stopMotor(i);
+    }
+}
+
+/*
 // drive motor
 void GMC::driveMotor(const int &i)
 {
@@ -173,6 +183,7 @@ void GMC::driveMotor(const int &i)
         }
     }
 }
+*/
 
 // drive motor with step
 void GMC::driveMotor(const int &i, const float &step)

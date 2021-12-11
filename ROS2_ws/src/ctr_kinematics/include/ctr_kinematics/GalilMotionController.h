@@ -32,13 +32,16 @@ public:
     void setMotorSpeedCoeff(const int &i, const int &rate);
 
     // drive motor
-    void driveMotor(const int &i);
+    // void driveMotor(const int &i);
 
     // drive motor with step
     void driveMotor(const int &i, const float &step);
 
     // enable motor position tracking mode
     void trackMotor(const int &i, const float &pos_val);
+
+    // stop all motor motion
+    void stopAllMotors();
 
 private:
     // check command error

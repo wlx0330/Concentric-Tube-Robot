@@ -1,9 +1,11 @@
-# action request srv
-bool init_teleop false
+# action goal request srv
+float32[3] init_config_tran
+float32[3] init_config_rot
 ---
 # action result srv
-bool start_teleop false
+float32[3] final_config_tran
+float32[3] final_config_rot
 ---
 # action feedback std_msg
-float32[3] joint_error_rot
 float32[3] joint_error_tran
+float32[3] joint_error_rot
