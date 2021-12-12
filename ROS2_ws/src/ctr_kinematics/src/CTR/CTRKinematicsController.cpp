@@ -23,6 +23,7 @@ void KC::SolveFK(const std::array<double, 3> &config_tran,
 // return CTR tip coordinates
 std::array<double, 3> KC::GetTipCoord()
 {
-    std::array<double, 3> temp = {0, 0, 0};
-    return temp;
+    auto tip_coord = this->ctr_.GetDist();
+    std::array<double, 3> coord = {tip_coord[0], tip_coord[1], tip_coord[2]};
+    return coord;
 }
