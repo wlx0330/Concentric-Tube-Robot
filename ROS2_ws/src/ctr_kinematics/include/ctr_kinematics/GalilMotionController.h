@@ -31,9 +31,6 @@ public:
     // set motor speed change rate
     void setMotorSpeedCoeff(const int &i, const int &rate);
 
-    // drive motor
-    // void driveMotor(const int &i);
-
     // drive motor with step
     void driveMotor(const int &i, const float &step);
 

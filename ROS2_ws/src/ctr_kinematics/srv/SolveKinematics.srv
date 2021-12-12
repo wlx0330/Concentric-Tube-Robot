@@ -1,0 +1,7 @@
+float32[3] fk_config_tran
+float32[3] fk_config_rot
+float32[3] ik_target_coord
+---
+float32[3] tip_coord
+float32[3] config_tran
+float32[3] config_rot

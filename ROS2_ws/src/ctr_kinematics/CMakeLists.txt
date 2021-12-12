@@ -25,9 +25,9 @@ find_package(rosidl_default_generators REQUIRED)
 # add ROS 2 interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotConfig.msg"
-  "srv/InitMotors.srv"
+  # "srv/InitMotors.srv"
   "srv/DriveMotors.srv"
-  "srv/EnableActions.srv"
+  "srv/SolveKinematics.srv"
   "action/RobotTeleop.action"
 )
 ament_export_dependencies(rosidl_default_runtime)
@@ -74,6 +74,7 @@ set(ctr_SRCS
   src/CTR/CTR.cpp
   src/CTR/Kinematics.cpp
   src/CTR/Controller.cpp
+  src/CTR/CTRKinematicsController.cpp
 )
 add_library(CTRLib STATIC ${ctr_SRCS})
 target_include_directories(CTRLib PUBLIC

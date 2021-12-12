@@ -15,9 +15,7 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 #include "ctr_kinematics/msg/robot_config.hpp"
-#include "ctr_kinematics/srv/init_motors.hpp"
 #include "ctr_kinematics/srv/drive_motors.hpp"
-#include "ctr_kinematics/srv/enable_actions.hpp"
 #include "ctr_kinematics/action/robot_teleop.hpp"
 
 using namespace std::chrono_literals;
@@ -45,8 +43,21 @@ public:
         this->declare_parameter("robot_speed_rot", 10);
         this->declare_parameter("robot_speed_coeff", 10);
 
-        // TODO start sub and pub
-        // TODO init calib srv/action
+        // initialize motor drive service server
+        this->drive_motors_srv_ = this->create_service<ctr_kinematics::srv::DriveMotors>(
+            "DriveMotors",
+            std::bind(&GalilNode::CbDriveMotorsSrv, this, std::placeholders::_1, std::placeholders::_2),
+            rmw_qos_profile_services_default);
+
+        // start motor target config subscriber
+        this->target_config_sub_ = this->create_subscription<ctr_kinematics::msg::RobotConfig>(
+            "TargetConfig", 10,
+            std::bind(&GalilNode::CbTargetConfigSub, this, std::placeholders::_1));
+
+        // start motor configuration publisher
+        this->current_config_pub_ = this->create_publisher<ctr_kinematics::msg::RobotConfig>(
+            "CurrentConfig", 10);
+
         // this->declare_parameter("is_motor_ready", false);
         // this->declare_parameter("is_robot_ready", is_ready);
 
@@ -98,15 +109,6 @@ private:
             }
         }
         return true;
-    }
-
-    /* ROS2 Topics */
-
-    // motor target configuration subscriber
-    rclcpp::Subscription<ctr_kinematics::msg::RobotConfig>::SharedPtr _joint_config_sub;
-    void _jointConfigSubCB(const ctr_kinematics::msg::RobotConfig::SharedPtr target_config)
-    {
-        std::cout << "_jointConfigSubCB" << std::endl; // test code
     }
 
     /* ROS2 Parameters */
@@ -162,14 +164,6 @@ private:
                 if (p.as_bool())
                 {
                     RCLCPP_INFO(this->get_logger(), "robot is ready, enabling features...");
-
-                    // initialize motor drive service server
-                    this->_drive_motors_srv = this->create_service<ctr_kinematics::srv::DriveMotors>(
-                        "DriveMotors",
-                        std::bind(&GalilNode::_driveMotorsSrvCB, this, std::placeholders::_1, std::placeholders::_2),
-                        rmw_qos_profile_services_default);
-                    RCLCPP_INFO(this->get_logger(), "galil_node drive_motor service is enabled.");
-
                     // teleop action
                     this->_teleop_action_srv = rclcpp_action::create_server<ctr_kinematics::action::RobotTeleop>(
                         this, "TeleOperation",
@@ -187,9 +181,49 @@ private:
         return result;
     }
 
+    /* ROS2 Topics */
+
+    // motor target configuration subscriber
+    rclcpp::Subscription<ctr_kinematics::msg::RobotConfig>::SharedPtr target_config_sub_;
+    void CbTargetConfigSub(const ctr_kinematics::msg::RobotConfig::SharedPtr target_config)
+    {
+        std::vector<float> step(6);
+        for (int i = 0; i < target_config->tran_joint.size(); ++i)
+        {
+            step[i] = target_config->tran_joint[i];
+        }
+        for (int i = 0; i < target_config->rot_joint.size(); ++i)
+        {
+            step[3 + i] = target_config->rot_joint[i];
+        }
+
+        // set up async execution
+        std::vector<std::future<void>> fut(6);
+        for (int i = 0; i < step.size(); ++i)
+        {
+            fut[i] = std::async(
+                std::launch::async, [this, &step](int i) -> void
+                { this->_gmc.trackMotor(i, step[i]); },
+                i);
+        }
+        for (int i = 0; i < step.size(); ++i)
+        {
+            fut[i].wait();
+        }
+        std::cout << "target_config_sub_" << std::endl; // test code
+    }
+
+    // motor current configuration publisher
+    rclcpp::Publisher<ctr_kinematics::msg::RobotConfig>::SharedPtr current_config_pub_;
+    rclcpp::TimerBase::SharedPtr current_config_topic_timer_;
+    void CbCurrentConfigPubTimer()
+    {
+        // TODO publish current motor position
+    }
+
     /* ROS2 Services */
 
-    // motor init service
+    /*     // motor init service
     rclcpp::Service<ctr_kinematics::srv::InitMotors>::SharedPtr _init_motors_srv;
     void _initMotorSrvCB(
         const ctr_kinematics::srv::InitMotors::Request::SharedPtr request,
@@ -240,10 +274,11 @@ private:
         // update service response
         response->is_connect = true;
     }
+ */
 
     // drive motor service
-    rclcpp::Service<ctr_kinematics::srv::DriveMotors>::SharedPtr _drive_motors_srv;
-    void _driveMotorsSrvCB(
+    rclcpp::Service<ctr_kinematics::srv::DriveMotors>::SharedPtr drive_motors_srv_;
+    void CbDriveMotorsSrv(
         const ctr_kinematics::srv::DriveMotors::Request::SharedPtr request,
         ctr_kinematics::srv::DriveMotors::Response::SharedPtr response)
     {
@@ -273,14 +308,6 @@ private:
 
         //update response
         response->is_motion_complete = true;
-    }
-
-    // enable teleop action service
-    rclcpp::Service<ctr_kinematics::srv::EnableActions>::SharedPtr enable_actions_srv_;
-    void EnableActionsSrvCb(
-        const ctr_kinematics::srv::EnableActions::Request::SharedPtr request,
-        ctr_kinematics::srv::EnableActions::Response::SharedPtr response)
-    {
     }
 
     /* ROS2 Actions */

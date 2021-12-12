@@ -94,7 +94,7 @@ void GMC::setMotorLocation(const int &i, const int &pos_val)
         this->_errTest(GCmd(g, s.c_str()));
         this->_errTest(GCmd(g, "PTA=1"));
         this->_motors[i].pos = pos_val;
-        this->_motors[i].is_tracking = true;
+        // this->_motors[i].is_tracking = true;
     }
 }
 
@@ -154,37 +154,6 @@ void GMC::stopAllMotors()
     }
 }
 
-/*
-// drive motor
-void GMC::driveMotor(const int &i)
-{
-    if (this->_keyTest(i))
-    {
-        GCon g = this->_motors[i].gcon;
-        while (1)
-        {
-            std::cout << "Enter a number to move or enter a non-number to exit:" << std::endl;
-            int step = 0;
-            std::cin >> step;    //enter new position
-            if (std::cin.fail()) //A non-number was entered
-            {
-                std::cin.clear();
-                std::cin.ignore();
-                return;
-            }
-            else
-            {
-                this->_stopMotor(i); // stop motor
-                std::string s = "IPA=" + std::to_string(this->_motors[i].unitToPulse(step));
-                this->_errTest(GCmd(g, s.c_str()));      // Go to new position
-                this->_errTest(GMotionComplete(g, "A")); // wait for motion to complete
-                this->_motors[i].pos += step;            //update position
-            }
-        }
-    }
-}
-*/
-
 // drive motor with step
 void GMC::driveMotor(const int &i, const float &step)
 {
@@ -202,16 +171,12 @@ void GMC::driveMotor(const int &i, const float &step)
 // enable motor position tracking mode
 void GMC::trackMotor(const int &i, const float &track_val)
 {
-    if (!this->_keyTest(i))
+    if (this->_keyTest(i))
     {
-        return;
+        GCon g = this->_motors[i].gcon;
+        this->_errTest(GCmd(g, "PTA=1"));
+        std::string s = "PAA=" + std::to_string(this->_motors[i].unitToPulse(track_val));
+        this->_errTest(GCmd(g, s.c_str()));
+        this->_motors[i].pos = track_val;
     }
-    if (!this->_motors[i].is_tracking)
-    {
-        return;
-    }
-    GCon g = this->_motors[i].gcon;
-    std::string s = "PAA=" + std::to_string(this->_motors[i].unitToPulse(track_val));
-    this->_errTest(GCmd(g, s.c_str()));
-    this->_motors[i].pos = track_val;
 }

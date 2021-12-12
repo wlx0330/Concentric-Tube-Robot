@@ -36,9 +36,6 @@ public:
     // motor position
     int pos;
 
-    // motor tracking mode if motor is calibrated
-    bool is_tracking;
-
     // motor connection
     GCon gcon;
 

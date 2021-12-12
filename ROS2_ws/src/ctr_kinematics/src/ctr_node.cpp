@@ -14,12 +14,13 @@ public:
   CTRNode::CTRNode() : Node("ConcentricTubeRobot")
   {
     // init ctr robot member
-    this->robot_ = Controller();
-    this->robot_.ControllerMenu();
+    this->ctr_robot_ = Controller();
+    this->ctr_robot_.ControllerMenu();
   }
 
 private:
-  Controller robot_;
+  //
+  Controller ctr_robot_;
 };
 
 int main(int argc, char **argv)

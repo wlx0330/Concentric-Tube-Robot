@@ -1,6 +1,0 @@
-string[] ip_address
-int32 motor_speed_lin 0
-int32 motor_speed_rot 0
-int32 motor_speed_coeff 0
----
-bool is_connect
