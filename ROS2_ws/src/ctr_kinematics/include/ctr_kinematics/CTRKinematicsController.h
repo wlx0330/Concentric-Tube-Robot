@@ -13,12 +13,15 @@ public:
     // class constructor
     CtrKinematicsController();
 
+    // return CTR tip coordinates
+    std::array<double, 3> GetTipCoord();
+
     // calculate CTR FK
     void SolveFK(const std::array<double, 3> &config_tran,
                  const std::array<double, 3> &config_rot);
 
-    // return CTR tip coordinates
-    std::array<double, 3> GetTipCoord();
+    // calculate CTR IK
+    void SolveIK(const std::array<double, 3> &target_coord);
 
 private:
     // ctr class

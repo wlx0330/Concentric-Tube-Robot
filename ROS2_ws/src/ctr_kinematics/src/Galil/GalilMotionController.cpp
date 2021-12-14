@@ -98,6 +98,20 @@ void GMC::setMotorLocation(const int &i, const int &pos_val)
     }
 }
 
+// TODO get motor current location
+void GMC::GetMotorLocation(const int &i, const int &pos_val)
+{
+    if (this->_keyTest(i))
+    {
+        GCon g = this->_motors[i].gcon;
+        // this->_stopMotor(i);
+        // std::string s = "DPA=" + std::to_string(this->_motors[i].unitToPulse(pos_val));
+        int val;
+        this->_errTest(GCmdI(g, "PAA=?", &val));
+        // this only returns the last command value, not real time position val
+    }
+}
+
 // set motor max speed
 void GMC::setMotorSpeedMax(const int &i, const int &speed)
 {

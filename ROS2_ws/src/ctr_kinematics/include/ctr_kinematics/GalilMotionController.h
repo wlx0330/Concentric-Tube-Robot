@@ -25,6 +25,9 @@ public:
     // set motor current location
     void setMotorLocation(const int &i, const int &pos_val);
 
+    // get motor current location
+    void GetMotorLocation(const int &i, const int &pos_val);
+
     // set motor max speed
     void setMotorSpeedMax(const int &i, const int &speed);
 

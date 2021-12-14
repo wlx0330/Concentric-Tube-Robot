@@ -49,6 +49,12 @@ public:
             std::bind(&GalilNode::CbDriveMotorsSrv, this, std::placeholders::_1, std::placeholders::_2),
             rmw_qos_profile_services_default);
 
+        // initialize set motor home service server
+        this->set_home_srv_ = this->create_service<ctr_kinematics::srv::DriveMotors>(
+            "SetHome",
+            std::bind(&GalilNode::CbSetHomeSrv, this, std::placeholders::_1, std::placeholders::_2),
+            rmw_qos_profile_services_default);
+
         // start motor target config subscriber
         this->target_config_sub_ = this->create_subscription<ctr_kinematics::msg::RobotConfig>(
             "TargetConfig", 10,
@@ -60,12 +66,6 @@ public:
 
         // this->declare_parameter("is_motor_ready", false);
         // this->declare_parameter("is_robot_ready", is_ready);
-
-        // initialize motor setup service server
-        // this->_init_motors_srv = this->create_service<ctr_kinematics::srv::InitMotors>(
-        //     "InitMotors",
-        //     std::bind(&GalilNode::_initMotorSrvCB, this, std::placeholders::_1, std::placeholders::_2),
-        //     rmw_qos_profile_services_default);
     }
 
 private:
@@ -210,7 +210,6 @@ private:
         {
             fut[i].wait();
         }
-        std::cout << "target_config_sub_" << std::endl; // test code
     }
 
     // motor current configuration publisher
@@ -219,62 +218,41 @@ private:
     void CbCurrentConfigPubTimer()
     {
         // TODO publish current motor position
+        // require to log galil data...
     }
 
     /* ROS2 Services */
 
-    /*     // motor init service
-    rclcpp::Service<ctr_kinematics::srv::InitMotors>::SharedPtr _init_motors_srv;
-    void _initMotorSrvCB(
-        const ctr_kinematics::srv::InitMotors::Request::SharedPtr request,
-        ctr_kinematics::srv::InitMotors::Response::SharedPtr response)
+    // set motor home pos
+    rclcpp::Service<ctr_kinematics::srv::DriveMotors>::SharedPtr set_home_srv_;
+    void CbSetHomeSrv(
+        const ctr_kinematics::srv::DriveMotors::Request::SharedPtr request,
+        ctr_kinematics::srv::DriveMotors::Response::SharedPtr response)
     {
-        // connect motors to ip
-        auto address = request->ip_address;
-        std::vector<std::future<bool>> fut(address.size());
-
-        // async motor init
-        for (int i = 0; i < address.size(); ++i)
+        std::vector<float> step(6);
+        for (int i = 0; i < request->motor_step_lin.size(); ++i)
         {
-            // set lambda function
+            step[i] = request->motor_step_lin[i];
+        }
+        for (int i = 0; i < request->motor_step_rot.size(); ++i)
+        {
+            step[3 + i] = request->motor_step_rot[i];
+        }
+        // set up async execution
+        std::vector<std::future<void>> fut(6);
+        for (int i = 0; i < step.size(); ++i)
+        {
             fut[i] = std::async(
-                std::launch::async, [this, &address](int i) -> bool
-                {
-                    if (this->_gmc.connectMotor(i, address[i]))
-                    {
-                        return this->_gmc.initMotor(i);
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                },
+                std::launch::async, [this, &step](int i) -> void
+                { this->_gmc.setMotorLocation(i, step[i]); },
                 i);
         }
-        for (int i = 0; i < address.size(); ++i)
+        for (int i = 0; i < step.size(); ++i)
         {
-            if (fut[i].get())
-            {
-                RCLCPP_INFO(this->get_logger(), "Motor %d initialization SUCCESS!", i);
-            }
-            else
-            {
-                RCLCPP_INFO(this->get_logger(), "Motor %d initialization FAIL!", i);
-                response->is_connect = false;
-                return;
-            }
+            fut[i].wait();
+            RCLCPP_INFO(this->get_logger(), "The location of motor %d is set to %d. ", i, step[i]);
         }
-
-        // set motor speed parameter after init motors
-        this->set_parameter(rclcpp::Parameter("robot_speed_lin", request->motor_speed_lin));
-        this->set_parameter(rclcpp::Parameter("robot_speed_rot", request->motor_speed_rot));
-        this->set_parameter(rclcpp::Parameter("robot_speed_coeff", request->motor_speed_coeff));
-        this->set_parameter(rclcpp::Parameter("is_robot_ready", true));
-
-        // update service response
-        response->is_connect = true;
     }
- */
 
     // drive motor service
     rclcpp::Service<ctr_kinematics::srv::DriveMotors>::SharedPtr drive_motors_srv_;
@@ -291,7 +269,6 @@ private:
         {
             step[3 + i] = request->motor_step_rot[i];
         }
-
         // set up async execution
         std::vector<std::future<void>> fut(6);
         for (int i = 0; i < step.size(); ++i)
@@ -407,15 +384,12 @@ private:
             RCLCPP_INFO(this->get_logger(), "goal succeeded");
         }
     }
-
-    // other actions
 };
 
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<GalilNode>());
-    std::cout << "after spin" << std::endl; //tc
     rclcpp::shutdown();
     return 0;
 }

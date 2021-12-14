@@ -17,10 +17,11 @@ public:
     {
         // init ctr robot member
         this->ctr_robot_ = CtrKinematicsController();
+        this->ctr_ghost_ = CtrKinematicsController();
 
         // start CTR FK server
         this->solve_fk_srv_ = this->create_service<ctr_kinematics::srv::SolveKinematics>(
-            "SolveKinematics",
+            "SolveCtrFk",
             std::bind(&KinematicsNode::CbSolveFkSrv, this, std::placeholders::_1, std::placeholders::_2),
             rmw_qos_profile_services_default);
 
@@ -30,6 +31,7 @@ public:
 private:
     // CTR controller class
     CtrKinematicsController ctr_robot_;
+    CtrKinematicsController ctr_ghost_;
 
     // kinematics computation timer
     rclcpp::TimerBase::SharedPtr timer_;
@@ -56,13 +58,28 @@ private:
         const ctr_kinematics::srv::SolveKinematics::Request::SharedPtr request,
         ctr_kinematics::srv::SolveKinematics::Response::SharedPtr response)
     {
-        this->timer_ = this->create_wall_timer(1s, std::bind(&KinematicsNode::CbTimer, this));
+        std::chrono::seconds time_out = 1s; // max computation time
+        this->timer_ = this->create_wall_timer(time_out, std::bind(&KinematicsNode::CbTimer, this));
         this->ctr_robot_.SolveFK(request->fk_config_tran, request->fk_config_rot);
-        auto time_passed = 1s - this->timer_->time_until_trigger();
+        std::chrono::duration<double, std::milli> time_passed =
+            time_out - this->timer_->time_until_trigger();
         this->timer_->cancel();
         RCLCPP_INFO(this->get_logger(),
-                    "Solving CTR forward kinematics in %d ms.", time_passed.count());
+                    "Solving CTR forward kinematics in %lf ms.", time_passed.count());
         response->tip_coord = this->ctr_robot_.GetTipCoord();
+    }
+
+    // CTR IK service
+    // get target -> return motor config in response
+    rclcpp::Service<ctr_kinematics::srv::SolveKinematics>::SharedPtr solve_ik_srv_;
+    void CbSolveIkSrv(
+        const ctr_kinematics::srv::SolveKinematics::Request::SharedPtr request,
+        ctr_kinematics::srv::SolveKinematics::Response::SharedPtr response)
+    {
+        std::chrono::seconds time_out = 3s; // max computation time
+        this->timer_ = this->create_wall_timer(time_out, std::bind(&KinematicsNode::CbTimer, this));
+
+        this->timer_->cancel();
     }
 
     /* ROS2 Actions*/
