@@ -23,10 +23,19 @@ public:
     // calculate CTR IK
     void SolveIK(const std::array<double, 3> &target_coord);
 
+    // get CTR translation motor config
+    std::array<double, 3> GetConfigTran();
+
+    // get CTR rotation motor config
+    std::array<double, 3> GetConfigRot();
+
 private:
     // ctr class
     CTR ctr_;
 
     // kinematics class
     Kinematics kinematics_;
+
+    // CTR tip coordinate
+    std::array<double, 3> tip_coord_;
 };

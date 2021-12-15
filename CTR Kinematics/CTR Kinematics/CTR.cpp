@@ -9,11 +9,16 @@ std::array<Tube, 3UL> CTR::tubes = { Tube(), Tube(), Tube() };
 CTR::CTR()
 {
 	//set tube parameters ID OD Ls Lc R
+	// CTR::tubes[0].SetDimension(0.8e-3, 0.92e-3, 0.199, 0.059, 1.0/25.555);
+	// CTR::tubes[1].SetDimension(0.97e-3, 1.1e-3, 0.169, 0.089, 1.0/10.555);
+	// CTR::tubes[2].SetDimension(1.2e-3, 1.4e-3, 0.1, 0.0, INFINITY);
 	CTR::tubes[0].SetDimension(0.8e-3, 0.92e-3, 0.19, 0.06, 0.04);
 	CTR::tubes[1].SetDimension(0.97e-3, 1.1e-3, 0.12, 0.08, 0.1);
 	CTR::tubes[2].SetDimension(1.2e-3, 1.4e-3, 0.1, 0.0, INFINITY);
 
 	// init input (Tran & Rot)
+	// blaze::subvector(this->config, 0UL, 3UL) = { 0.199 - 0.115, 0.169 - 0.1, 0.1 - 0.08 };
+	// blaze::subvector(this->config, 3UL, 3UL) = { 0.0, 0.0, 0.0 };
 	blaze::subvector(this->config, 0UL, 3UL) = { 0.05, 0.0, 0.0 };
 	blaze::subvector(this->config, 3UL, 3UL) = { 0.0, 0.0, 0.0 };
 	//auto t1 = std::chrono::high_resolution_clock::now();

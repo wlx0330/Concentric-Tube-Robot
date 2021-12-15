@@ -40,6 +40,9 @@ public:
     // ctr fk client
     rclcpp::Client<ctr_kinematics::srv::SolveKinematics>::SharedPtr solve_ctr_fk_cli_;
 
+    // ctr ik client
+    rclcpp::Client<ctr_kinematics::srv::SolveKinematics>::SharedPtr solve_ctr_ik_cli_;
+
     // action timer
     rclcpp::TimerBase::SharedPtr timer;
 
@@ -152,7 +155,7 @@ int main(int argc, char **argv)
     }
     std::vector<rclcpp::Parameter> motor_speed;
     motor_speed.push_back(rclcpp::Parameter("robot_speed_lin", 10));
-    motor_speed.push_back(rclcpp::Parameter("robot_speed_rot", 90));
+    motor_speed.push_back(rclcpp::Parameter("robot_speed_rot", 60));
     motor_speed.push_back(rclcpp::Parameter("robot_speed_coeff", 10)); //
     auto results = param_cli->set_parameters(motor_speed);
 
@@ -210,7 +213,8 @@ int main(int argc, char **argv)
     }
 
     //test kineamtics node fk server
-    test_node->solve_ctr_fk_cli_ = test_node->create_client<ctr_kinematics::srv::SolveKinematics>("SolveCtrFk");
+    test_node->solve_ctr_fk_cli_ =
+        test_node->create_client<ctr_kinematics::srv::SolveKinematics>("SolveCtrFk");
     while (!test_node->solve_ctr_fk_cli_->wait_for_service(3s))
     {
         if (!rclcpp::ok())
@@ -221,12 +225,36 @@ int main(int argc, char **argv)
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "motor not ready, waiting again...");
     }
     auto req3 = std::make_shared<ctr_kinematics::srv::SolveKinematics::Request>();
-    req3->fk_config_rot = {90, 0, 0};
+    req3->fk_config_rot = {90.0, 0, 0}; //deg
     req3->fk_config_tran = {0, 0, 0};
     auto res3 = test_node->solve_ctr_fk_cli_->async_send_request(req3);
     RCLCPP_INFO(test_node->get_logger(), "ctr fk request has been sent. ");
     rclcpp::spin_until_future_complete(test_node, res3);
     auto tip = res3.get()->tip_coord;
+    std::cout << "x = " << tip[0] << " y = " << tip[1] << " z = " << tip[2] << std::endl; //tc
+
+    //test kineamtics node ik server
+    test_node->solve_ctr_ik_cli_ =
+        test_node->create_client<ctr_kinematics::srv::SolveKinematics>("SolveCtrIk");
+    while (!test_node->solve_ctr_ik_cli_->wait_for_service(3s))
+    {
+        if (!rclcpp::ok())
+        {
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
+            return 0;
+        }
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "motor not ready, waiting again...");
+    }
+    req3->ik_target_coord = tip;
+    req3->ik_target_coord[1] -= 0.001;
+    auto res4 = test_node->solve_ctr_ik_cli_->async_send_request(req3);
+    RCLCPP_INFO(test_node->get_logger(), "ctr ik request has been sent. ");
+    rclcpp::spin_until_future_complete(test_node, res4);
+    auto tran_new = res4.get()->config_tran;
+    auto rot_new = res4.get()->config_rot;
+    std::cout << "tube 1 tran = " << tran_new[0] << ", rot = " << rot_new[0] << std::endl;
+    std::cout << "tube 2 tran = " << tran_new[1] << ", rot = " << rot_new[1] << std::endl;
+    std::cout << "tube 3 tran = " << tran_new[2] << ", rot = " << rot_new[2] << std::endl;
     std::cout << "x = " << tip[0] << " y = " << tip[1] << " z = " << tip[2] << std::endl; //tc
 
     //test_node->timer = rclcpp::create_wall_timer(100ms, std::bind(&TestNode::))

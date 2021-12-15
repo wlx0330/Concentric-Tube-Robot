@@ -25,7 +25,7 @@ public:
             std::bind(&KinematicsNode::CbSolveFkSrv, this, std::placeholders::_1, std::placeholders::_2),
             rmw_qos_profile_services_default);
 
-        //...
+        this->CaSolveIkSrv(); // start CTR IK server
     }
 
 private:
@@ -34,6 +34,7 @@ private:
     CtrKinematicsController ctr_ghost_;
 
     // kinematics computation timer
+    // TODO may need to set up different callback groups
     rclcpp::TimerBase::SharedPtr timer_;
     void CbTimer()
     {
@@ -52,6 +53,7 @@ private:
 
     /* ROS2 Services */
 
+    // TODO consider using ROS2 action in order to allow cancelling
     // CTR FK service
     rclcpp::Service<ctr_kinematics::srv::SolveKinematics>::SharedPtr solve_fk_srv_;
     void CbSolveFkSrv(
@@ -70,16 +72,32 @@ private:
     }
 
     // CTR IK service
-    // get target -> return motor config in response
+    // TODO use multi thread?
     rclcpp::Service<ctr_kinematics::srv::SolveKinematics>::SharedPtr solve_ik_srv_;
+    void CaSolveIkSrv() // call "ahead" function for IK service
+    {
+        this->solve_ik_srv_ = this->create_service<ctr_kinematics::srv::SolveKinematics>(
+            "SolveCtrIk",
+            std::bind(&KinematicsNode::CbSolveIkSrv, this, std::placeholders::_1, std::placeholders::_2),
+            rmw_qos_profile_services_default);
+    }
     void CbSolveIkSrv(
         const ctr_kinematics::srv::SolveKinematics::Request::SharedPtr request,
         ctr_kinematics::srv::SolveKinematics::Response::SharedPtr response)
     {
-        std::chrono::seconds time_out = 3s; // max computation time
+        std::chrono::seconds time_out = 5s; // max computation time
         this->timer_ = this->create_wall_timer(time_out, std::bind(&KinematicsNode::CbTimer, this));
-
+        // move ctr to init config
+        this->ctr_ghost_.SolveFK(request->fk_config_tran, request->fk_config_rot);
+        this->ctr_ghost_.SolveIK(request->ik_target_coord);
+        std::chrono::duration<double, std::milli> time_passed =
+            time_out - this->timer_->time_until_trigger();
         this->timer_->cancel();
+        RCLCPP_INFO(this->get_logger(),
+                    "Solving CTR inverse kinematics in %lf ms.", time_passed.count());
+        response->config_tran = this->ctr_ghost_.GetConfigTran();
+        response->config_rot = this->ctr_ghost_.GetConfigRot();
+        response->tip_coord = this->ctr_ghost_.GetTipCoord();
     }
 
     /* ROS2 Actions*/
