@@ -13,14 +13,26 @@ public:
   // node class constructor
   CTRNode::CTRNode() : Node("ConcentricTubeRobot")
   {
-    // init ctr robot member
-    this->ctr_robot_ = Controller();
-    this->ctr_robot_.ControllerMenu();
   }
 
 private:
-  //
-  Controller ctr_robot_;
+  /* ROS2 Parameters */
+
+  // set parameter function
+
+  /* ROS2 Topics */
+
+  // motor target config publisher
+
+  /* ROS2 Services */
+
+  // set motor home
+
+  /* ROS2 Actions */
+
+  // CTR FK action server
+
+  // CTR IK action server
 };
 
 int main(int argc, char **argv)

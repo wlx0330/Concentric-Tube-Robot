@@ -25,10 +25,10 @@ find_package(rosidl_default_generators REQUIRED)
 # add ROS 2 interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotConfig.msg"
-  # "srv/InitMotors.srv"
   "srv/DriveMotors.srv"
   "srv/SolveKinematics.srv"
   "action/RobotTeleop.action"
+  "action/Kinematics.action"
 )
 ament_export_dependencies(rosidl_default_runtime)
 

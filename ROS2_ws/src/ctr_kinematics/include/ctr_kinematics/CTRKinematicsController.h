@@ -29,6 +29,9 @@ public:
     // get CTR rotation motor config
     std::array<double, 3> GetConfigRot();
 
+    // duration timer
+    std::chrono::duration<double, std::milli> timer;
+
 private:
     // ctr class
     CTR ctr_;

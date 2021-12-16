@@ -257,6 +257,8 @@ int main(int argc, char **argv)
     std::cout << "tube 3 tran = " << tran_new[2] << ", rot = " << rot_new[2] << std::endl;
     std::cout << "x = " << tip[0] << " y = " << tip[1] << " z = " << tip[2] << std::endl; //tc
 
+    //
+
     //test_node->timer = rclcpp::create_wall_timer(100ms, std::bind(&TestNode::))
 
     // action test

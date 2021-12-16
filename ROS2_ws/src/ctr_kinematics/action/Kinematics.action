@@ -1,0 +1,13 @@
+# action goal request srv
+float64[3] fk_tran
+float64[3] fk_rot
+float64[3] ik_goal
+---
+# action result srv
+float64[3] tip_coord
+float64[3] robot_tran
+float64[3] robot_rot
+---
+# action feedback
+float64[3] goal_error
+float64 ik_time

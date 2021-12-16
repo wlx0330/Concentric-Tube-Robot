@@ -20,16 +20,22 @@ std::array<double, 3> KC::GetTipCoord()
 void KC::SolveFK(const std::array<double, 3> &config_tran,
                  const std::array<double, 3> &config_rot) // deg to rad
 {
+    auto t1 = std::chrono::high_resolution_clock::now();
     blaze::StaticVector<double, 6> input;
     blaze::subvector(input, 0UL, 3UL) = blaze::StaticVector<double, 3>(config_tran);
     blaze::subvector(input, 3UL, 3UL) = blaze::StaticVector<double, 3>(config_rot) * M_PI / 180.0;
     this->kinematics_.CTRFK(this->ctr_, input);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    this->timer = t2 - t1;
 }
 
 // calculate CTR IK
 void KC::SolveIK(const std::array<double, 3> &target_coord)
 {
+    auto t1 = std::chrono::high_resolution_clock::now();
     this->kinematics_.CTRIK(this->ctr_, blaze::StaticVector<double, 3>(target_coord));
+    auto t2 = std::chrono::high_resolution_clock::now();
+    this->timer = t2 - t1;
 }
 
 // get CTR translation motor config
