@@ -1,4 +1,4 @@
-float32[<=3] motor_step_lin 
-float32[<=3] motor_step_rot
+float64[<=3] motor_step_lin 
+float64[<=3] motor_step_rot
 ---
 bool is_motion_complete
