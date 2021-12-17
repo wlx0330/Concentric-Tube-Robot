@@ -133,6 +133,7 @@ private:
                 this->_gmc.setMotorSpeedMax(2, p.as_int());
                 result.successful = true;
                 result.reason = "translation motor speed is set";
+                continue;
             }
             // set speed for rotation motor
             else if (p.get_name() == "robot_speed_rot" &&
@@ -144,6 +145,7 @@ private:
                 this->_gmc.setMotorSpeedMax(5, p.as_int());
                 result.successful = true;
                 result.reason = "rotation motor speed is set";
+                continue;
             }
             // set speed change rate
             else if (p.get_name() == "robot_speed_coeff" &&
@@ -156,6 +158,7 @@ private:
                 }
                 result.successful = true;
                 result.reason = "motor speed change rate is set";
+                continue;
             }
             // enable services and actions when robot is ready
             else if (p.get_name() == "is_robot_ready" &&
@@ -176,6 +179,7 @@ private:
                 {
                     RCLCPP_INFO(this->get_logger(), "robot is NOT ready");
                 }
+                continue;
             }
         }
         return result;

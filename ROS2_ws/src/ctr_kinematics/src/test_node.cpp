@@ -2,9 +2,9 @@
 #include <iostream>
 #include <string>
 
+#include "GalilMotionController.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
-#include "GalilMotionController.h"
 #include "ctr_kinematics/msg/robot_config.hpp"
 #include "ctr_kinematics/srv/solve_kinematics.hpp"
 #include "ctr_kinematics/srv/drive_motors.hpp"
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
     std::vector<rclcpp::Parameter> motor_speed;
     motor_speed.push_back(rclcpp::Parameter("robot_speed_lin", 10));
     motor_speed.push_back(rclcpp::Parameter("robot_speed_rot", 60));
-    motor_speed.push_back(rclcpp::Parameter("robot_speed_coeff", 10)); //
+    //motor_speed.push_back(rclcpp::Parameter("robot_speed_coeff", 10)); //
     auto results = param_cli->set_parameters(motor_speed);
 
     // motor motion

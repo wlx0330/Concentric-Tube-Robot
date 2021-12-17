@@ -73,7 +73,6 @@ set(ctr_SRCS
   src/CTR/BVP.cpp
   src/CTR/CTR.cpp
   src/CTR/Kinematics.cpp
-  src/CTR/Controller.cpp
   src/CTR/CTRKinematicsController.cpp
 )
 add_library(CTRLib STATIC ${ctr_SRCS})
@@ -97,7 +96,7 @@ target_link_libraries(GalilLib gclib)
 
 # add nodes
 add_executable(ctr_node src/ctr_node.cpp)
-target_link_libraries(ctr_node CTRLib)
+target_link_libraries(ctr_node CTRLib GalilLib)
 rosidl_target_interfaces(ctr_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
 ament_target_dependencies(ctr_node rclcpp rclcpp_action)
 
