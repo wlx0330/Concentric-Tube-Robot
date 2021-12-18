@@ -45,9 +45,8 @@ public:
     motor_speed.push_back(rclcpp::Parameter("robot_speed_lin", tran));
     motor_speed.push_back(rclcpp::Parameter("robot_speed_rot", rot));
     motor_speed.push_back(rclcpp::Parameter("robot_speed_coeff", coeff));
-    std::cout << "?????????????????" << std::endl; //tc
-    auto results = param_cli->set_parameters(motor_speed);
     RCLCPP_INFO(this->get_logger(), "Sending request to change robot_speed parameters.");
+    auto results = param_cli->set_parameters(motor_speed);
   }
 
   void DriveMotor(const std::array<double, 3> &motor_tran,
@@ -59,7 +58,7 @@ public:
     {
       if (!rclcpp::ok())
       {
-        rclcpp::shutdown();
+        return;
       }
       RCLCPP_INFO(this->get_logger(),
                   "Motors are not ready, waiting for Initialization...");
@@ -69,13 +68,33 @@ public:
     request->motor_step_rot = {motor_rot[0], motor_rot[1], motor_rot[2]};
     RCLCPP_INFO(this->get_logger(), "Sending request to drive motors.");
     auto response = this->drive_motor_cli_->async_send_request(request);
-    return;
+    rclcpp::spin_until_future_complete(this->shared_from_this(), response);
+  }
+
+  void SetMotorHome(const std::array<double, 3> &motor_tran,
+                    const std::array<double, 3> &motor_rot)
+  {
+    this->set_motor_home_cli_ =
+        this->create_client<ctr_kinematics::srv::DriveMotors>("SetHome");
+    while (!this->set_motor_home_cli_->wait_for_service(3s))
+    {
+      if (!rclcpp::ok())
+      {
+        return;
+      }
+      RCLCPP_INFO(this->get_logger(),
+                  "Service SetMotorHome not ready, waiting...");
+    }
+    auto request = std::make_shared<ctr_kinematics::srv::DriveMotors::Request>();
+    request->motor_step_lin = {motor_tran[0], motor_tran[1], motor_tran[2]};
+    request->motor_step_rot = {motor_rot[0], motor_rot[1], motor_rot[2]};
+    RCLCPP_INFO(this->get_logger(), "Sending request to set home configuration.");
+    auto response = this->set_motor_home_cli_->async_send_request(request);
+    rclcpp::spin_until_future_complete(this->shared_from_this(), response);
   }
 
 private:
   /* ROS2 Parameters */
-
-  // set parameter function
 
   /* ROS2 Topics */
 
@@ -89,6 +108,9 @@ private:
 
   // drive motor with step
   rclcpp::Client<ctr_kinematics::srv::DriveMotors>::SharedPtr drive_motor_cli_;
+
+  // set motor home configuration service client
+  rclcpp::Client<ctr_kinematics::srv::DriveMotors>::SharedPtr set_motor_home_cli_;
 
   /* ROS2 Actions */
 
@@ -104,6 +126,9 @@ int main(int argc, char **argv)
   auto ctr_node = std::make_shared<CTRNode>();
   ctr_node->SetRobotSpeed(10, 60, 10);
   ctr_node->DriveMotor({0.0, 0.0, 0.0}, {90.0, 0.0, 0.0});
+  ctr_node->SetMotorHome({0.0, 0.0, 0.0}, {90.0, 0.0, 0.0});
+
+  // action clients for FK and IK
 
   // rclcpp::executors::MultiThreadedExecutor executor;
   // executor.add_node(ctr_node);
