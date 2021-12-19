@@ -22,7 +22,7 @@ void KC::SolveFK(const std::array<double, 3> &config_tran,
 {
     auto t1 = std::chrono::high_resolution_clock::now();
     blaze::StaticVector<double, 6> input;
-    blaze::subvector(input, 0UL, 3UL) = blaze::StaticVector<double, 3>(config_tran);
+    blaze::subvector(input, 0UL, 3UL) = blaze::StaticVector<double, 3>(config_tran) / 1000.0;
     blaze::subvector(input, 3UL, 3UL) = blaze::StaticVector<double, 3>(config_rot) * M_PI / 180.0;
     this->kinematics_.CTRFK(this->ctr_, input);
     auto t2 = std::chrono::high_resolution_clock::now();
@@ -41,7 +41,7 @@ void KC::SolveIK(const std::array<double, 3> &target_coord)
 // get CTR translation motor config
 std::array<double, 3> KC::GetConfigTran()
 {
-    auto temp = this->ctr_.GetTran();
+    auto temp = this->ctr_.GetTran() * 1000.0;
     std::array<double, 3UL> tran = {temp[0], temp[1], temp[2]};
     return tran;
 }

@@ -138,6 +138,7 @@ private:
         const std::shared_ptr<rclcpp_action::ServerGoalHandle<ctr_kinematics::action::Kinematics>>
             goal_handle)
     {
+        std::cout << "goal cancel" << std::endl; //tc
         (void)goal_handle;
         return rclcpp_action::CancelResponse::ACCEPT;
     }
@@ -155,13 +156,10 @@ private:
     {
         const auto goal = goal_handle->get_goal();
         auto result = std::make_shared<ctr_kinematics::action::Kinematics::Result>();
-
         // async lambda function call
         auto fut = std::async(std::launch::async, [this, &goal]()
                               { this->ctr_robot_.SolveFK(goal->fk_tran, goal->fk_rot); });
-
         // check future and cancel request
-        rclcpp::Rate loop_clock(1ms); // check frequency
         while (rclcpp::ok())
         {
             if (goal_handle->is_canceling())
@@ -171,7 +169,7 @@ private:
                 RCLCPP_INFO(this->get_logger(), "Solving CTR FK time out, request is canceled.");
                 return;
             }
-            if (fut.valid())
+            if (fut.wait_for(1ms) == std::future_status::ready)
             {
                 result->tip_coord = this->ctr_robot_.GetTipCoord();
                 goal_handle->succeed(result);
@@ -180,7 +178,6 @@ private:
                             this->ctr_robot_.timer.count());
                 return;
             }
-            loop_clock.sleep();
         }
     }
 
@@ -223,12 +220,10 @@ private:
     {
         const auto goal = goal_handle->get_goal();
         auto result = std::make_shared<ctr_kinematics::action::Kinematics::Result>();
-
         //async lambda function call
         auto fut = std::async(std::launch::async, [this, &goal]()
                               { this->ctr_robot_.SolveFK(goal->fk_tran, goal->fk_rot); });
-        bool IsFkComplete = false;
-        rclcpp::Rate loop_clock(1ms);
+        bool is_fk = true;
         while (rclcpp::ok())
         {
             if (goal_handle->is_canceling())
@@ -238,19 +233,19 @@ private:
                 RCLCPP_INFO(this->get_logger(), "Solving CTR IK time out, request is canceled.");
                 return;
             }
-            if (fut.valid())
+            if (fut.wait_for(1ms) == std::future_status::ready)
             {
-                if (!IsFkComplete)
+                if (is_fk)
                 {
-                    IsFkComplete = true;
+                    is_fk = false;
                     fut = std::async(std::launch::async, [this, &goal]()
                                      { this->ctr_robot_.SolveIK(goal->ik_goal); });
                 }
                 else
                 {
-                    result->robot_tran = this->ctr_ghost_.GetConfigTran();
-                    result->robot_rot = this->ctr_ghost_.GetConfigRot();
-                    result->tip_coord = this->ctr_ghost_.GetTipCoord();
+                    result->robot_tran = this->ctr_robot_.GetConfigTran();
+                    result->robot_rot = this->ctr_robot_.GetConfigRot();
+                    result->tip_coord = this->ctr_robot_.GetTipCoord();
                     goal_handle->succeed(result);
                     RCLCPP_INFO(this->get_logger(),
                                 "Solving CTR inverse kinematics in %lf ms.",
@@ -258,7 +253,6 @@ private:
                     return;
                 }
             }
-            loop_clock.sleep();
         }
     }
 };
